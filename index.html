@@ -88,15 +88,13 @@
   .hero-content {
     position: relative;
     z-index: 2;
-    padding: 80px 60px;
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
+    padding: 100px 60px;
+    max-width: 50%;
   }
   .hero-text h1 {
-    font-size: 48px;
-    line-height: 1;
-    letter-spacing: -1px;
+    font-size: 72px !important;
+    line-height: 1 !important;
+    letter-spacing: -1.5px;
     color: var(--ink);
     font-weight: 900;
     margin-bottom: 16px;
@@ -108,9 +106,6 @@
     color: var(--muted);
     margin-bottom: 24px;
     font-weight: 400;
-    max-width: 520px;
-    margin-left: auto;
-    margin-right: auto;
     line-height: 1.7;
   }
   .hero-sub {
@@ -121,7 +116,7 @@
     margin-bottom: 28px;
     font-weight: 600;
   }
-  .hero-pills { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .hero-pills { display: flex; gap: 10px; flex-wrap: wrap; }
   .pill {
     background: var(--lavender-deep);
     color: var(--ink);
@@ -565,15 +560,21 @@
 </nav>
 
 <!-- HERO with Campaign Web Banner -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-content">
-    <h1>GEL-XTND.<br>SOFT GEL TIPS.<br>PERFECTED.</h1>
-    <div class="hero-tagline">Flexible soft gel that moves with your natural nail. Pre-shaped, lightweight, and built to last.</div>
-    <div class="hero-sub">SHOP THE GEL-XTND COLLECTION</div>
-    <div class="hero-pills">
-      <button class="pill">SHOP THE LOOK</button>
-      <button class="pill outline">SHOP THE RANGE</button>
+<section style="position: relative; height: 620px; overflow: hidden; background-color: #E5DACB;">
+  <div style="position: absolute; inset: 0; background-image: url('images/campaign_web_banner.png'); background-size: cover; background-position: center right; background-repeat: no-repeat;"></div>
+  <div style="position: relative; z-index: 2; padding: 100px 60px; max-width: 60%;">
+    <h1 style="font-family: 'Playfair Display', Georgia, serif; font-size: 48px; line-height: 1.05; letter-spacing: -1px; color: #1A1A1A; font-weight: 900; margin: 0 0 20px 0; text-transform: uppercase;">
+      Gel-XTND. Soft Gel Tips. Perfected.
+    </h1>
+    <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #6B6B68; margin: 0 0 28px 0; font-weight: 400; line-height: 1.6; max-width: 480px;">
+      Flexible soft gel that moves with your natural nail. Pre-shaped, lightweight, and built to last.
+    </p>
+    <div style="font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #1A1A1A; margin-bottom: 28px; font-weight: 600;">
+      SHOP THE GEL-XTND COLLECTION
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <button style="background: #D6BFF0; color: #1A1A1A; padding: 12px 24px; border-radius: 30px; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border: none; font-family: 'Inter', sans-serif;">SHOP THE LOOK</button>
+      <button style="background: transparent; color: #1A1A1A; padding: 12px 24px; border-radius: 30px; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border: 1px solid #1A1A1A; font-family: 'Inter', sans-serif;">SHOP THE RANGE</button>
     </div>
   </div>
 </section>
