@@ -148,25 +148,13 @@
   .pill.outline { background: transparent; border: 1px solid var(--ink); }
   .hero-badge {
     position: absolute;
-    top: 50px;
+    top: 60px;
     right: 60px;
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: var(--white);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Playfair Display', serif;
-    text-align: center;
-    border: 3px solid #C5A572;
+    width: 130px;
+    height: 130px;
     transform: rotate(-8deg);
     z-index: 3;
   }
-  .hero-badge .num { font-size: 28px; font-weight: 700; line-height: 1; }
-  .hero-badge .lbl { font-size: 8px; letter-spacing: 1.2px; margin-top: 4px; text-transform: uppercase; }
 
   /* Section common */
   .section { padding: 90px 60px; }
@@ -198,8 +186,8 @@
 
   /* Spec strip — sits under hero, key product facts */
   .spec-strip {
-    background: var(--white);
-    border-bottom: 1px solid #F0E8DC;
+    background: var(--pink-pale);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
     padding: 28px 60px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -589,10 +577,7 @@
 <!-- HERO with Campaign Web Banner -->
 <section class="hero">
   <div class="hero-bg"></div>
-  <div class="hero-badge">
-    <div class="num">No.1</div>
-    <div class="lbl">Gel Tip<br>Brand</div>
-  </div>
+  <img src="images/number_1_badge.png" alt="Australia's No.1 Gel Polish Brand" class="hero-badge">
   <div class="hero-content">
     <h1>GEL-XTND.<br>SOFT GEL TIPS.<br>PERFECTED.</h1>
     <div class="hero-tagline">Flexible soft gel that moves with your natural nail. Pre-shaped, lightweight, and built to last.</div>
@@ -613,7 +598,7 @@
 </div>
 
 <!-- THE RANGE -->
-<section class="section pink">
+<section class="section">
   <h2>THE GEL-XTND RANGE</h2>
   <p class="section-sub">Flexible soft gel tips, pre-shaped with a natural curve. Four shapes, three lengths each, applied with the 5-in-1 Rubber Base and cured under the LED lamp. Plus two ProStudio Kits for first-time buyers.</p>
   <div class="range-grid">
@@ -659,7 +644,7 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="section">
+<section class="section lavender">
   <h2>HOW IT WORKS</h2>
   <div class="how-intro">
     <p style="color: var(--muted); font-size: 14px; line-height: 1.7;">
@@ -695,7 +680,7 @@
 </section>
 
 <!-- SHOP THE LOOK -->
-<section class="section cream">
+<section class="section">
   <h2>SHOP THE LOOK</h2>
   <p class="section-sub">Eight viral nail trends, eight bundles. Each kit ships with the gel shades and the Gel-XTND tip shape that brings the look together.</p>
   <div class="look-grid">
