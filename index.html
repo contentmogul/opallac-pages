@@ -70,33 +70,66 @@
     font-size: 14px;
   }
 
-  /* Hero — Opallac style: big bold serif ALL CAPS title with lifestyle image right */
+  /* Hero — uses the Campaign Web Banner image as a full-bleed background */
   .hero {
-    background: var(--pink-pale-2);
-    padding: 80px 60px 100px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: center;
-    min-height: 520px;
     position: relative;
+    height: 620px;
+    overflow: hidden;
+    background-color: #E5DACB;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('images/campaign_web_banner.png');
+    background-size: cover;
+    background-position: center right;
+    background-repeat: no-repeat;
+  }
+  .hero-bg-placeholder {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, #E5DACB 0%, #E5DACB 35%, #D4C4B0 100%);
+    background-image:
+      linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35) 33%, transparent 38%, transparent 50%, rgba(255,255,255,0.2) 53%, transparent 58%),
+      linear-gradient(110deg, #E5DACB 0%, #E5DACB 35%, #D4C4B0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 80px;
+    color: rgba(44,44,42,0.4);
+    font-size: 11px;
+    font-style: italic;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 100px 60px;
+    max-width: 50%;
   }
   .hero-text h1 {
-    font-size: 84px;
+    font-size: 80px;
     line-height: 0.92;
     letter-spacing: -2px;
     color: var(--ink);
     font-weight: 900;
-    margin-bottom: 28px;
+    margin-bottom: 16px;
     text-transform: uppercase;
   }
+  .hero-tagline {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 28px;
+    font-style: italic;
+    font-weight: 400;
+  }
   .hero-sub {
-    font-size: 13px;
+    font-size: 12px;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--ink);
-    margin-bottom: 36px;
-    font-weight: 500;
+    margin-bottom: 32px;
+    font-weight: 600;
   }
   .hero-pills { display: flex; gap: 10px; flex-wrap: wrap; }
   .pill {
@@ -113,32 +146,12 @@
     display: inline-block;
   }
   .pill.outline { background: transparent; border: 1px solid var(--ink); }
-  .hero-image {
-    background:
-      radial-gradient(circle at 30% 40%, rgba(255,255,255,0.6) 0%, transparent 35%),
-      radial-gradient(circle at 70% 70%, rgba(214,191,240,0.8) 0%, transparent 40%),
-      linear-gradient(135deg, #F0E4F8 0%, #E8DEF5 50%, #DCC8EE 100%);
-    border-radius: 8px;
-    aspect-ratio: 4/5;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero-image::after {
-    content: 'Lifestyle hero — finished hand close-up';
-    position: absolute;
-    bottom: 24px;
-    left: 24px;
-    color: rgba(44,44,42,0.5);
-    font-size: 11px;
-    font-style: italic;
-    letter-spacing: 0.5px;
-  }
   .hero-badge {
     position: absolute;
-    top: 100px;
+    top: 50px;
     right: 60px;
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
     background: var(--ink);
     color: var(--white);
@@ -150,9 +163,9 @@
     text-align: center;
     border: 3px solid #C5A572;
     transform: rotate(-8deg);
-    z-index: 2;
+    z-index: 3;
   }
-  .hero-badge .num { font-size: 32px; font-weight: 700; line-height: 1; }
+  .hero-badge .num { font-size: 28px; font-weight: 700; line-height: 1; }
   .hero-badge .lbl { font-size: 8px; letter-spacing: 1.2px; margin-top: 4px; text-transform: uppercase; }
 
   /* Section common */
@@ -176,14 +189,39 @@
     color: var(--muted);
     font-size: 14px;
     margin-bottom: 56px;
-    max-width: 620px;
+    max-width: 680px;
     margin-left: auto;
     margin-right: auto;
     line-height: 1.7;
   }
   .section.dark .section-sub { color: rgba(255,255,255,0.7); }
 
-  /* The Gel-XTND range — now Section 2, right under hero */
+  /* Spec strip — sits under hero, key product facts */
+  .spec-strip {
+    background: var(--white);
+    border-bottom: 1px solid #F0E8DC;
+    padding: 28px 60px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    text-align: center;
+  }
+  .spec strong {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .spec span {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* The Gel-XTND range */
   .range-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -283,7 +321,7 @@
     text-transform: uppercase;
   }
 
-  /* Foundation Section */
+  /* Foundation */
   .foundation-card {
     max-width: 1100px;
     margin: 0 auto;
@@ -354,9 +392,9 @@
     letter-spacing: 1.2px;
   }
 
-  /* How it works — focused on application */
+  /* How it works */
   .how-intro {
-    max-width: 800px;
+    max-width: 760px;
     margin: 0 auto 56px;
     text-align: center;
   }
@@ -407,7 +445,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
   }
   .compare-card {
@@ -421,16 +459,17 @@
   }
   .compare-card h3 {
     font-size: 26px;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: -0.3px;
   }
   .compare-card ul { list-style: none; }
   .compare-card li {
-    padding: 10px 0;
+    padding: 11px 0;
     font-size: 13px;
     border-bottom: 1px solid rgba(0,0,0,0.06);
+    line-height: 1.5;
   }
   .compare-card.featured li { border-bottom-color: rgba(255,255,255,0.1); }
   .compare-card li::before {
@@ -439,6 +478,9 @@
     margin-right: 4px;
   }
   .compare-card.featured li::before { color: var(--lavender-deep); }
+  .compare-card li strong {
+    font-weight: 600;
+  }
 
   /* UGC */
   .ugc-grid {
@@ -471,10 +513,7 @@
   }
 
   /* FAQ */
-  .faq {
-    max-width: 820px;
-    margin: 0 auto;
-  }
+  .faq { max-width: 820px; margin: 0 auto; }
   .faq-item {
     background: var(--white);
     border-radius: 8px;
@@ -496,7 +535,6 @@
     font-weight: 300;
   }
 
-  /* Closing CTA */
   .closing {
     background: var(--ink);
     padding: 90px 60px;
@@ -531,7 +569,7 @@
 <body>
 
 <div class="note-banner">
-  <strong>Wireframe mockup for client review.</strong> Image placeholders represent where finished hand-photography will sit. Built using the Opallac brand system. v5 · 15 May 2026
+  <strong>Wireframe mockup for client review.</strong> Image placeholders represent where finished hand-photography will sit. Built using the Opallac brand system. v6 · 15 May 2026
 </div>
 
 <div class="promo">FREE SHIPPING on all orders over $120 · FREE EXPRESS Shipping on all orders over $150</div>
@@ -548,27 +586,36 @@
   <div class="nav-icons">⌕ ◯ ⊝</div>
 </nav>
 
-<!-- HERO -->
+<!-- HERO with Campaign Web Banner -->
 <section class="hero">
-  <div class="hero-text">
-    <h1>SALON<br>EXTENSIONS<br>AT HOME.</h1>
+  <div class="hero-bg"></div>
+  <div class="hero-badge">
+    <div class="num">No.1</div>
+    <div class="lbl">Gel Tip<br>Brand</div>
+  </div>
+  <div class="hero-content">
+    <h1>GEL-XTND.<br>SOFT GEL TIPS.<br>PERFECTED.</h1>
+    <div class="hero-tagline">Flexible soft gel that moves with your natural nail. Pre-shaped, lightweight, and built to last.</div>
     <div class="hero-sub">SHOP THE GEL-XTND COLLECTION</div>
     <div class="hero-pills">
       <button class="pill">SHOP THE LOOK</button>
       <button class="pill outline">SHOP THE RANGE</button>
     </div>
   </div>
-  <div class="hero-image"></div>
-  <div class="hero-badge">
-    <div class="num">No.1</div>
-    <div class="lbl">Gel Tip<br>Brand</div>
-  </div>
 </section>
 
-<!-- SECTION 2: THE GEL-XTND RANGE (moved up to replace Shop by Shape) -->
+<!-- Quick spec strip -->
+<div class="spec-strip">
+  <div class="spec"><strong>420 tips</strong><span>14 sizes per box</span></div>
+  <div class="spec"><strong>4 shapes</strong><span>3 lengths each</span></div>
+  <div class="spec"><strong>3+ week wear</strong><span>Soak-off removal</span></div>
+  <div class="spec"><strong>Infillable</strong><span>With Builder Gel</span></div>
+</div>
+
+<!-- THE RANGE -->
 <section class="section pink">
   <h2>THE GEL-XTND RANGE</h2>
-  <p class="section-sub">Four soft gel tip shapes, each available in Short, Medium and Long. Plus two ProStudio Kits that include the Flash Cure or Salon Lamp for first-time buyers.</p>
+  <p class="section-sub">Flexible soft gel tips, pre-shaped with a natural curve. Four shapes, three lengths each, applied with the 5-in-1 Rubber Base and cured under the LED lamp. Plus two ProStudio Kits for first-time buyers.</p>
   <div class="range-grid">
     <div class="range-card">
       <img src="images/tip_almond.png" alt="Gel-XTND Almond Soft Gel Tips">
@@ -611,43 +658,43 @@
   </div>
 </section>
 
-<!-- SECTION 3: HOW IT WORKS (application-focused, 4 steps) -->
+<!-- HOW IT WORKS -->
 <section class="section">
   <h2>HOW IT WORKS</h2>
   <div class="how-intro">
     <p style="color: var(--muted); font-size: 14px; line-height: 1.7;">
-      Gel-XTND soft gel tips fuse to your natural nail with our 5-in-1 Rubber Base and cure under the Flash Cure LED Lamp. Salon-quality extensions in under 30 minutes. No glue, no acrylics, no damage.
+      Gel-XTND soft gel tips are made from the same gel polish system you already love. Apply with our 5-in-1 Rubber Base, cure under an LED lamp, and you have a flexible, comfortable extension that moves with your natural nail. No glue. No acrylics. No damage.
     </p>
   </div>
   <div class="steps">
     <div class="step">
       <div class="step-icon">◔</div>
       <div class="step-num">STEP 01</div>
-      <h3>Prep & buff</h3>
-      <p>Clean nails with alcohol wipes. Lightly buff the surface for a clean adhesion. File and shape your natural nail.</p>
+      <h3>Prep your nail</h3>
+      <p>Clean each nail with alcohol wipes. Lightly buff the surface for a flawless bond. File and shape your natural nail to match.</p>
     </div>
     <div class="step">
       <div class="step-icon">◐</div>
       <div class="step-num">STEP 02</div>
-      <h3>Apply tip & base</h3>
-      <p>Sized Gel-XTND tip in place. Brush the 5-in-1 Rubber Base on your nail and the underside of the tip, then press.</p>
+      <h3>Size your tip</h3>
+      <p>Find the right size from the 14 sizes per box. Brush the 5-in-1 Rubber Base on your natural nail and on the inside of the tip.</p>
     </div>
     <div class="step">
       <div class="step-icon">◑</div>
       <div class="step-num">STEP 03</div>
-      <h3>Flash cure</h3>
-      <p>Cure each nail under the Flash Cure LED Lamp for 60 seconds. The compact design fits even the longest tips precisely.</p>
+      <h3>Press &amp; cure</h3>
+      <p>Press the tip onto the nail at a slight angle, hold steady, then cure under the LED lamp. The Flash Cure handles each nail precisely.</p>
     </div>
     <div class="step">
       <div class="step-icon">◕</div>
       <div class="step-num">STEP 04</div>
-      <h3>Colour & finish</h3>
-      <p>Shape with a file. Apply your favourite Opallac gel colour. Seal with top coat and cure. Wears 3+ weeks.</p>
+      <h3>Shape &amp; finish</h3>
+      <p>File to your preferred length and shape. Apply your favourite Opallac gel colour. Seal with top coat. Wears 3+ weeks.</p>
     </div>
   </div>
 </section>
 
-<!-- SECTION 4: SHOP THE LOOK -->
+<!-- SHOP THE LOOK -->
 <section class="section cream">
   <h2>SHOP THE LOOK</h2>
   <p class="section-sub">Eight viral nail trends, eight bundles. Each kit ships with the gel shades and the Gel-XTND tip shape that brings the look together.</p>
@@ -689,7 +736,7 @@
   </div>
 </section>
 
-<!-- SECTION 5: FOUNDATION STARTER -->
+<!-- FOUNDATION KIT -->
 <section class="section lavender">
   <h2>NEW TO GEL EXTENSIONS?</h2>
   <p class="section-sub">Start with the Foundation Kit. Everything you need to apply any look, in one bundle.</p>
@@ -697,7 +744,7 @@
     <div class="foundation-image"></div>
     <div class="foundation-content">
       <h3>The Foundation Starter Kit</h3>
-      <p>Built for first-time Gel-XTND customers. Includes the Flash Cure LED Lamp engineered specifically for soft gel tips, the 5-in-1 Rubber Base for bulletproof adhesion, no-wipe top coat, alcohol prep wipes, and the file and buffing block.</p>
+      <p>Built for first-time Gel-XTND customers. Includes the Flash Cure LED Lamp engineered for soft gel tip application, the 5-in-1 Rubber Base that holds the tips in place, no-wipe top coat, alcohol prep wipes, and the file and buffing block.</p>
       <div class="includes">FLASH CURE LAMP · 5-IN-1 RUBBER BASE · NO-WIPE TOP COAT · 20PK ALCOHOL WIPES · NAIL FILE · BUFFING BLOCK</div>
       <div class="foundation-price">
         <span class="price">$70</span>
@@ -708,35 +755,39 @@
   </div>
 </section>
 
-<!-- SECTION 6: vs press-on -->
+<!-- VS PRESS-ON -->
 <section class="section">
   <h2>GEL-XTND VS PRESS-ON</h2>
-  <p class="section-sub">Not all "fake nails" are the same. Soft gel tips fuse to the natural nail. Press-ons sit on top.</p>
+  <p class="section-sub">Not all "fake nails" are the same. Gel-XTND is made from the same flexible soft gel as your favourite gel polish. Press-ons are rigid plastic, glue-only, and sit on top of your nail.</p>
   <div class="comparison">
     <div class="compare-card featured">
       <h3>Gel-XTND Soft Gel</h3>
       <ul>
-        <li>3 week wear, no lifting</li>
-        <li>Soaks off cleanly with acetone</li>
-        <li>Salon-quality glossy finish</li>
-        <li>Fuses to the natural nail</li>
-        <li>Built for soft gel application</li>
+        <li><strong>Flexible soft gel</strong>, same system as gel polish</li>
+        <li><strong>Pre-shaped</strong> with a natural curve at the apex</li>
+        <li><strong>Applied with gel</strong>, cured under an LED lamp</li>
+        <li><strong>Moves with the natural nail</strong>, less lifting and breakage</li>
+        <li><strong>Soak-off removal</strong>, no ripping or force</li>
+        <li><strong>Infillable</strong> with Builder Gel for refresh</li>
+        <li><strong>Thin, lightweight</strong>, feels comfortable</li>
       </ul>
     </div>
     <div class="compare-card">
       <h3>Press-on / Fake Nails</h3>
       <ul>
-        <li>Days, not weeks, of wear</li>
-        <li>Glue-on, lifts easily</li>
+        <li>Rigid plastic, no flexibility</li>
+        <li>One-size shape, sits on top of the nail</li>
+        <li>Glue-only, no curing</li>
+        <li>Lifts and pops off, days not weeks</li>
+        <li>Peeled or ripped off, can damage the nail</li>
+        <li>Single-use, no refresh option</li>
         <li>Plastic feel and finish</li>
-        <li>Sits on top of the natural nail</li>
-        <li>Generic application across brands</li>
       </ul>
     </div>
   </div>
 </section>
 
-<!-- SECTION 7: UGC -->
+<!-- UGC -->
 <section class="section pink">
   <h2>WHO'S WEARING GEL-XTND</h2>
   <p class="section-sub">Tag @opallacgelpolish_official for a chance to feature.</p>
@@ -749,15 +800,15 @@
   </div>
 </section>
 
-<!-- SECTION 8: FAQ -->
+<!-- FAQ -->
 <section class="section">
   <h2>QUESTIONS, ANSWERED</h2>
   <p class="section-sub">Everything you need to know before your first Gel-XTND application.</p>
   <div class="faq">
     <div class="faq-item"><span class="q">What is gel-x and how is it different from press-on?</span><span class="plus">+</span></div>
     <div class="faq-item"><span class="q">Do I need a flash lamp or will my regular lamp work?</span><span class="plus">+</span></div>
-    <div class="faq-item"><span class="q">How long do Gel-XTND tips last?</span><span class="plus">+</span></div>
-    <div class="faq-item"><span class="q">Which shape suits my natural nail?</span><span class="plus">+</span></div>
+    <div class="faq-item"><span class="q">How long do Gel-XTND tips last and how do I refresh them?</span><span class="plus">+</span></div>
+    <div class="faq-item"><span class="q">Which shape and length suits my natural nail?</span><span class="plus">+</span></div>
     <div class="faq-item"><span class="q">How do I remove them safely?</span><span class="plus">+</span></div>
   </div>
 </section>
