@@ -40,7 +40,7 @@
     font-weight: 500;
   }
   .nav {
-    background: var(--pink-pale);
+    background: var(--white);
     padding: 18px 60px;
     display: flex;
     justify-content: space-between;
@@ -85,53 +85,43 @@
     background-position: center right;
     background-repeat: no-repeat;
   }
-  .hero-bg-placeholder {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(110deg, #E5DACB 0%, #E5DACB 35%, #D4C4B0 100%);
-    background-image:
-      linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35) 33%, transparent 38%, transparent 50%, rgba(255,255,255,0.2) 53%, transparent 58%),
-      linear-gradient(110deg, #E5DACB 0%, #E5DACB 35%, #D4C4B0 100%);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 80px;
-    color: rgba(44,44,42,0.4);
-    font-size: 11px;
-    font-style: italic;
-  }
   .hero-content {
     position: relative;
     z-index: 2;
-    padding: 100px 60px;
-    max-width: 50%;
+    padding: 80px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
   }
   .hero-text h1 {
-    font-size: 80px;
-    line-height: 0.92;
-    letter-spacing: -2px;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -1px;
     color: var(--ink);
     font-weight: 900;
     margin-bottom: 16px;
     text-transform: uppercase;
   }
   .hero-tagline {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    color: var(--ink);
-    margin-bottom: 28px;
-    font-style: italic;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 24px;
     font-weight: 400;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
   }
   .hero-sub {
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--ink);
-    margin-bottom: 32px;
+    margin-bottom: 28px;
     font-weight: 600;
   }
-  .hero-pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .hero-pills { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   .pill {
     background: var(--lavender-deep);
     color: var(--ink);
@@ -577,7 +567,6 @@
 <!-- HERO with Campaign Web Banner -->
 <section class="hero">
   <div class="hero-bg"></div>
-  <img src="images/number_1_badge.png" alt="Australia's No.1 Gel Polish Brand" class="hero-badge">
   <div class="hero-content">
     <h1>GEL-XTND.<br>SOFT GEL TIPS.<br>PERFECTED.</h1>
     <div class="hero-tagline">Flexible soft gel that moves with your natural nail. Pre-shaped, lightweight, and built to last.</div>
@@ -592,9 +581,9 @@
 <!-- Quick spec strip -->
 <div class="spec-strip">
   <div class="spec"><strong>420 tips</strong><span>14 sizes per box</span></div>
-  <div class="spec"><strong>4 shapes</strong><span>3 lengths each</span></div>
-  <div class="spec"><strong>3+ week wear</strong><span>Soak-off removal</span></div>
-  <div class="spec"><strong>Infillable</strong><span>With Builder Gel</span></div>
+  <div class="spec"><strong>4 shapes</strong><span>Almond, Coffin, Square, Oval</span></div>
+  <div class="spec"><strong>3 sizes</strong><span>Short, Medium, Long</span></div>
+  <div class="spec"><strong>Soak off</strong><span>Or in-fill with Gel Builder</span></div>
 </div>
 
 <!-- THE RANGE -->
