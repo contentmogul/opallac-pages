@@ -1,0 +1,17 @@
+{
+  "name": "opallac-drive-sheets-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloud Run backend for the Opallac campaign-assets page: Drive v3 folder listing + Sheets v4 read/write, guarded against campaigns.json.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "google-auth-library": "^11.1.0"
+  }
+}
