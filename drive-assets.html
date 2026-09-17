@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaign Assets</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f7;
+  }
+  .app { display: flex; min-height: 100vh; }
+  nav {
+    width: 260px; flex-shrink: 0;
+    background: #ffffff; border-right: 1px solid #e2e2e6;
+    overflow-y: auto; padding: 12px 0;
+  }
+  nav h1 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: #8a8a8e; margin: 4px 20px 10px; font-weight: 600;
+  }
+  nav ul { list-style: none; margin: 0; padding: 0; }
+  nav li a {
+    display: block; padding: 10px 20px; color: #333; text-decoration: none;
+    font-size: 14px; border-left: 3px solid transparent;
+  }
+  nav li a:hover { background: #f0f0f2; }
+  nav li a.active { background: #eaf1fd; border-left-color: #1a73e8; color: #1a73e8; font-weight: 600; }
+  main { flex: 1; min-width: 0; padding: 28px 32px 60px; max-width: 900px; }
+  h2.campaign-title { margin: 0 0 24px; font-size: 22px; color: #222; }
+  section { margin-bottom: 40px; }
+  section > h3 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: #8a8a8e; margin: 0 0 12px; font-weight: 700;
+  }
+
+  .status { color: #8a8a8e; font-size: 14px; padding: 20px 0; }
+  .status.error { color: #c0392b; white-space: pre-wrap; }
+
+  .row-card {
+    background: #fff; border: 1px solid #e2e2e6; border-radius: 10px;
+    overflow: hidden; margin-bottom: 20px;
+  }
+  .row-card img.paired {
+    display: block; width: 100%; max-height: 480px; object-fit: contain;
+    background: #f0f0f2;
+  }
+  .field-grid { display: grid; grid-template-columns: 220px 1fr; }
+  .field-grid .field-label, .field-grid .field-value {
+    padding: 12px 16px; border-top: 1px solid #eee; font-size: 14px;
+  }
+  .field-grid > :nth-child(-n+2) { border-top: none; }
+  .field-label {
+    font-weight: 700; color: #444; text-transform: uppercase; font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  .field-value { color: #222; white-space: pre-line; word-break: break-word; }
+  .field-value:empty::before { content: "—"; color: #ccc; }
+  .field-value textarea {
+    width: 100%; min-height: 70px; font: inherit; padding: 8px;
+    border: 1px solid #ccc; border-radius: 6px; resize: vertical;
+  }
+  .field-value label.checkbox {
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .row-actions {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-top: 1px solid #eee; background: #fafafa;
+  }
+  .row-actions button {
+    padding: 8px 18px; background: #1a73e8; color: #fff; border: none;
+    border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px;
+  }
+  .row-actions button:disabled { background: #a9c6f0; cursor: default; }
+  .row-actions .save-status { font-size: 13px; color: #8a8a8e; }
+  .row-actions .save-status.ok { color: #1a8a3e; }
+  .row-actions .save-status.err { color: #c0392b; }
+
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .gallery a { display: block; border-radius: 8px; overflow: hidden; border: 1px solid #e2e2e6; }
+  .gallery img { width: 100%; height: 140px; object-fit: cover; display: block; }
+
+  .video-wrap { position: relative; width: 100%; padding-top: 56.25%; margin-bottom: 16px; border-radius: 8px; overflow: hidden; background: #000; }
+  .video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video-name { font-size: 13px; color: #8a8a8e; margin: -10px 0 16px; }
+
+  @media (prefers-color-scheme: dark) {
+    html, body { background: #1c1c1e; }
+    nav { background: #2c2c2e; border-right-color: #3a3a3c; }
+    nav li a { color: #ddd; }
+    nav li a:hover { background: #3a3a3c; }
+    nav li a.active { background: #1e3a5f; }
+    h2.campaign-title { color: #eee; }
+    .row-card { background: #2c2c2e; border-color: #3a3a3c; }
+    .row-card img.paired { background: #1c1c1e; }
+    .field-grid .field-label, .field-grid .field-value { border-top-color: #3a3a3c; }
+    .field-label { color: #bbb; }
+    .field-value { color: #eee; }
+    .row-actions { border-top-color: #3a3a3c; background: #262628; }
+    .gallery a { border-color: #3a3a3c; }
+  }
+  @media (max-width: 720px) {
+    .app { flex-direction: column; }
+    nav { width: 100%; border-right: 0; border-bottom: 1px solid #e2e2e6; max-height: 30vh; }
+    .field-grid { grid-template-columns: 140px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <nav>
+    <h1>Campaigns</h1>
+    <ul id="nav-list"></ul>
+  </nav>
+  <main>
+    <h2 class="campaign-title" id="campaign-title">Select a campaign</h2>
+    <div id="content"><div class="status">Choose a campaign from the left.</div></div>
+  </main>
+</div>
+
+<script>
+  const IMAGE_BASE = 'https://drive.google.com/thumbnail?sz=w1600&id=';
+  const IMAGE_THUMB = (id) => `https://drive.google.com/thumbnail?sz=w400&id=${id}`;
+  const VIDEO_PREVIEW = (id) => `https://drive.google.com/file/d/${id}/preview`;
+
+  let CAMPAIGNS = [];
+  let API_ENDPOINT = null;
+
+  const navList = document.getElementById('nav-list');
+  const content = document.getElementById('content');
+  const titleEl = document.getElementById('campaign-title');
+
+  function renderNav(activeId) {
+    navList.innerHTML = '';
+    CAMPAIGNS.forEach(c => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = '?folder=' + encodeURIComponent(c.folderId);
+      a.textContent = c.label;
+      if (c.folderId === activeId) a.classList.add('active');
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        loadCampaign(c, true);
+      });
+      li.appendChild(a);
+      navList.appendChild(li);
+    });
+  }
+
+  function apiUrl(params) {
+    const url = new URL(API_ENDPOINT);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    return url.toString();
+  }
+
+  async function loadCampaign(campaign, pushState) {
+    titleEl.textContent = campaign.label;
+    content.innerHTML = '<div class="status">Loading…</div>';
+    renderNav(campaign.folderId);
+
+    if (pushState) {
+      const url = new URL(location.href);
+      url.searchParams.set('folder', campaign.folderId);
+      history.pushState({ folder: campaign.folderId }, '', url);
+    }
+
+    if (!API_ENDPOINT || API_ENDPOINT.includes('REPLACE_WITH')) {
+      content.innerHTML = '<div class="status error">config.json\'s "apiEndpoint" is not set yet.\n\nDeploy apps-script/campaign-api.gs as a Web App and paste its URL into config.json.</div>';
+      return;
+    }
+
+    let folderData;
+    try {
+      const res = await fetch(apiUrl({ action: 'folder', folderId: campaign.folderId }));
+      folderData = await res.json();
+      if (!folderData.ok) throw new Error(folderData.error || 'Unknown error reading the folder.');
+    } catch (err) {
+      content.innerHTML = '<div class="status error">Could not load this folder from the Apps Script API:\n' + err.message + '\n\nCheck that the Web App is deployed with "Who has access: Anyone", and that this folder is listed in campaigns.json.</div>';
+      return;
+    }
+
+    const sheetSections = [];
+    for (const sheet of folderData.sheets) {
+      try {
+        const res = await fetch(apiUrl({ action: 'sheet', sheetId: sheet.id }));
+        const sheetData = await res.json();
+        if (!sheetData.ok) throw new Error(sheetData.error || 'Unknown error reading the sheet.');
+        sheetSections.push({ sheet, sheetData });
+      } catch (err) {
+        sheetSections.push({ sheet, error: err.message });
+      }
+    }
+
+    renderCampaign(folderData, sheetSections);
+  }
+
+  function findImageForRow(headers, rowValues, images) {
+    const imgHeader = headers.find(h => /image/i.test(h));
+    if (!imgHeader) return null;
+    const wanted = String(rowValues[imgHeader] || '').trim();
+    if (!wanted) return null;
+    return images.find(img => img.name === wanted)
+        || images.find(img => img.name.toLowerCase().includes(wanted.toLowerCase()));
+  }
+
+  function renderCampaign(folderData, sheetSections) {
+    content.innerHTML = '';
+    const usedImageIds = new Set();
+
+    for (const { sheet, sheetData, error } of sheetSections) {
+      const section = document.createElement('section');
+      const h3 = document.createElement('h3');
+      h3.textContent = sheet.name;
+      section.appendChild(h3);
+
+      if (error) {
+        const div = document.createElement('div');
+        div.className = 'status error';
+        div.textContent = error;
+        section.appendChild(div);
+        content.appendChild(section);
+        continue;
+      }
+
+      const { headers, rows } = sheetData;
+      const approvedHeader = headers.find(h => /approved/i.test(h));
+      const feedbackHeader = headers.find(h => /feedback/i.test(h));
+
+      rows.forEach(({ row, values }) => {
+        const card = document.createElement('div');
+        card.className = 'row-card';
+
+        const pairedImage = findImageForRow(headers, values, folderData.images);
+        if (pairedImage) {
+          usedImageIds.add(pairedImage.id);
+          const img = document.createElement('img');
+          img.className = 'paired';
+          img.src = IMAGE_BASE + pairedImage.id;
+          img.alt = pairedImage.name;
+          card.appendChild(img);
+        }
+
+        const grid = document.createElement('div');
+        grid.className = 'field-grid';
+
+        const editableInputs = {};
+
+        headers.forEach(header => {
+          if (!header.trim()) return;
+          const label = document.createElement('div');
+          label.className = 'field-label';
+          label.textContent = header.replace(/\s*\n\s*/g, ' ');
+          grid.appendChild(label);
+
+          const valueCell = document.createElement('div');
+          valueCell.className = 'field-value';
+
+          if (header === approvedHeader) {
+            const wrap = document.createElement('label');
+            wrap.className = 'checkbox';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = values[header] === true || String(values[header]).toUpperCase() === 'TRUE';
+            wrap.appendChild(cb);
+            wrap.appendChild(document.createTextNode('Approved'));
+            valueCell.appendChild(wrap);
+            editableInputs[header] = () => cb.checked;
+          } else if (header === feedbackHeader) {
+            const ta = document.createElement('textarea');
+            ta.value = values[header] || '';
+            valueCell.appendChild(ta);
+            editableInputs[header] = () => ta.value;
+          } else {
+            valueCell.textContent = values[header] != null ? String(values[header]) : '';
+          }
+
+          grid.appendChild(valueCell);
+        });
+
+        card.appendChild(grid);
+
+        if (Object.keys(editableInputs).length) {
+          const actions = document.createElement('div');
+          actions.className = 'row-actions';
+          const btn = document.createElement('button');
+          btn.textContent = 'Save';
+          const status = document.createElement('span');
+          status.className = 'save-status';
+          actions.appendChild(btn);
+          actions.appendChild(status);
+
+          btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            status.textContent = 'Saving…';
+            status.className = 'save-status';
+            const updates = {};
+            for (const key in editableInputs) updates[key] = editableInputs[key]();
+            try {
+              const res = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ sheetId: sheet.id, sheetName: sheet.name, row, updates })
+              });
+              const result = await res.json();
+              if (!result.ok) throw new Error(result.error || 'Unknown error.');
+              status.textContent = 'Saved';
+              status.className = 'save-status ok';
+            } catch (err) {
+              status.textContent = 'Error: ' + err.message;
+              status.className = 'save-status err';
+            } finally {
+              btn.disabled = false;
+            }
+          });
+
+          card.appendChild(actions);
+        }
+
+        section.appendChild(card);
+      });
+
+      content.appendChild(section);
+    }
+
+    const otherImages = folderData.images.filter(img => !usedImageIds.has(img.id));
+    if (otherImages.length) {
+      const section = document.createElement('section');
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Other images';
+      section.appendChild(h3);
+      const gallery = document.createElement('div');
+      gallery.className = 'gallery';
+      otherImages.forEach(img => {
+        const a = document.createElement('a');
+        a.href = IMAGE_BASE + img.id;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        const thumb = document.createElement('img');
+        thumb.src = IMAGE_THUMB(img.id);
+        thumb.alt = img.name;
+        thumb.loading = 'lazy';
+        a.appendChild(thumb);
+        gallery.appendChild(a);
+      });
+      section.appendChild(gallery);
+      content.appendChild(section);
+    }
+
+    if (folderData.videos.length) {
+      const section = document.createElement('section');
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Videos';
+      section.appendChild(h3);
+      folderData.videos.forEach(v => {
+        const wrap = document.createElement('div');
+        wrap.className = 'video-wrap';
+        const iframe = document.createElement('iframe');
+        iframe.src = VIDEO_PREVIEW(v.id);
+        iframe.allow = 'autoplay';
+        iframe.title = v.name;
+        wrap.appendChild(iframe);
+        section.appendChild(wrap);
+        const name = document.createElement('div');
+        name.className = 'video-name';
+        name.textContent = v.name;
+        section.appendChild(name);
+      });
+      content.appendChild(section);
+    }
+
+    if (!sheetSections.length && !folderData.images.length && !folderData.videos.length) {
+      content.innerHTML = '<div class="status">This folder has no images, videos, or sheets yet.</div>';
+    }
+  }
+
+  async function init() {
+    try {
+      const [campaignsRes, configRes] = await Promise.all([
+        fetch('./campaigns.json', { cache: 'no-store' }),
+        fetch('./config.json', { cache: 'no-store' })
+      ]);
+      CAMPAIGNS = await campaignsRes.json();
+      const config = await configRes.json();
+      API_ENDPOINT = config.apiEndpoint;
+    } catch (err) {
+      content.innerHTML = '<div class="status error">Could not load campaigns.json or config.json.</div>';
+      return;
+    }
+
+    const params = new URLSearchParams(location.search);
+    const requestedId = params.get('folder');
+    renderNav(requestedId);
+
+    const target = CAMPAIGNS.find(c => c.folderId === requestedId) || CAMPAIGNS[0];
+    if (target) loadCampaign(target, !requestedId);
+  }
+
+  window.addEventListener('popstate', () => {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('folder');
+    const target = CAMPAIGNS.find(c => c.folderId === id);
+    if (target) loadCampaign(target, false);
+  });
+
+  init();
+</script>
+
+</body>
+</html>

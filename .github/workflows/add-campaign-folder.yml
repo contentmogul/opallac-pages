@@ -1,0 +1,100 @@
+name: Add campaign folder
+
+# Manually triggered from the Actions tab by anyone with write access to this
+# repo. Paste a label and the Drive folder's share URL — this just records
+# {label, folderId} in campaigns.json. That's the whole job: the actual file
+# listing and Sheet data are read LIVE at page-load time by the Apps Script
+# API (apps-script/campaign-api.gs), so there's nothing to re-scrape or keep
+# in sync here — add a file to the Drive folder and it shows up on the page
+# immediately, no re-run needed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        description: 'Display name for this campaign/folder in the nav.'
+        required: true
+        type: string
+      drive_folder_url:
+        description: 'Google Drive folder share URL (e.g. from "Copy link").'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  add-folder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append to campaigns.json
+        id: append
+        env:
+          LABEL: ${{ inputs.label }}
+          FOLDER_URL: ${{ inputs.drive_folder_url }}
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+
+          const label = (process.env.LABEL || '').trim();
+          const folderUrl = (process.env.FOLDER_URL || '').trim();
+
+          const m = folderUrl.match(/\/folders\/([A-Za-z0-9_-]+)/);
+          if (!m) {
+            console.error('Could not find a /folders/<id> pattern in the pasted URL: ' + folderUrl);
+            console.error('Expected something like https://drive.google.com/drive/folders/<ID>?usp=sharing');
+            process.exit(1);
+          }
+          const folderId = m[1];
+
+          const path = 'campaigns.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+
+          const existing = data.find(c => c.folderId === folderId);
+          let action;
+          if (existing) {
+            existing.label = label;
+            action = 'updated';
+          } else {
+            data.push({ label, folderId });
+            action = 'added';
+          }
+
+          fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+          console.log(action + ' campaign: ' + label + ' (' + folderId + ')');
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,
+            'folder_id=' + folderId + '\n' +
+            'action=' + action + '\n');
+          NODE
+
+      - name: Commit and push
+        env:
+          LABEL: ${{ inputs.label }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add campaigns.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Add campaign folder: ${LABEL}"
+            git push
+          fi
+
+      - name: Summary
+        env:
+          LABEL: ${{ inputs.label }}
+          FOLDER_ID: ${{ steps.append.outputs.folder_id }}
+          ACTION_OUT: ${{ steps.append.outputs.action }}
+        run: |
+          {
+            echo "### ${ACTION_OUT^} campaign folder"
+            echo "- **Label:** ${LABEL}"
+            echo "- **Folder ID:** \`${FOLDER_ID}\`"
+            echo "- **Live link:** https://contentmogul.github.io/opallac-pages/drive-assets.html?folder=${FOLDER_ID}"
+            echo ""
+            echo "Files and Sheet data are read live from Drive — nothing further to sync."
+          } >> "$GITHUB_STEP_SUMMARY"
