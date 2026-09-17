@@ -29,7 +29,7 @@
   }
   nav li a:hover { background: #f0f0f2; }
   nav li a.active { background: #eaf1fd; border-left-color: #1a73e8; color: #1a73e8; font-weight: 600; }
-  main { flex: 1; min-width: 0; padding: 28px 32px 60px; max-width: 1100px; }
+  main { flex: 1; min-width: 0; padding: 28px 32px 60px; max-width: 1500px; }
   h2.campaign-title { margin: 0 0 24px; font-size: 22px; color: #222; }
   section { margin-bottom: 40px; }
   section > h3 {
@@ -54,7 +54,8 @@
   table.copy-table tr:last-child td { border-bottom: none; }
   table.copy-table td.wrap { white-space: pre-line; word-break: break-word; min-width: 200px; }
   table.copy-table td.approved-cell { text-align: center; }
-  table.copy-table td.feedback-cell { min-width: 260px; }
+  table.copy-table td.feedback-cell { min-width: 340px; }
+  table.copy-table th.copy-number-cell, table.copy-table td.copy-number-cell { width: 60px; white-space: nowrap; }
   table.copy-table td textarea {
     width: 100%; min-height: 90px; font: inherit; padding: 8px;
     border: 1px solid #ccc; border-radius: 6px; resize: vertical;
@@ -151,6 +152,7 @@
   // once-only campaign-info block. Approved/Feedback are handled specially
   // (rendered as editable controls) rather than falling into either bucket.
   const COPY_TABLE_PATTERN = /copy number|hook concepts|body copy|headlines?/i;
+  const COPY_NUMBER_PATTERN = /copy number/i;
   const APPROVED_PATTERN = /approved/i;
   const FEEDBACK_PATTERN = /feedback/i;
 
@@ -345,6 +347,7 @@
       .filter(Boolean)
       .forEach(h => {
         const th = document.createElement('th');
+        if (COPY_NUMBER_PATTERN.test(h)) th.className = 'copy-number-cell';
         th.textContent = h.replace(/\s*\n\s*/g, ' ').replace(/:$/, '');
         headRow.appendChild(th);
       });
@@ -356,7 +359,7 @@
       const tr = document.createElement('tr');
       copyHeaders.forEach(h => {
         const td = document.createElement('td');
-        td.className = 'wrap';
+        td.className = COPY_NUMBER_PATTERN.test(h) ? 'copy-number-cell' : 'wrap';
         td.textContent = values[h] || '';
         tr.appendChild(td);
       });
