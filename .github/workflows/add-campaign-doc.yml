@@ -1,0 +1,115 @@
+name: Add campaign doc
+
+# Manually triggered from the Actions tab by anyone with write access to this
+# repo. Paste a title, a folder name, and the full Lark "Copy link" URL —
+# this appends the doc to docs.json (creating the folder section if it's new)
+# and commits straight to main. No git or code editing required.
+
+on:
+  workflow_dispatch:
+    inputs:
+      folder:
+        description: 'Folder name (mirrors the Lark Drive folder, e.g. "Campaign Plans"). Matches an existing folder case-insensitively; anything new creates a new section in the nav.'
+        required: true
+        type: string
+      title:
+        description: 'Document title, exactly as it should appear in the left nav.'
+        required: true
+        type: string
+      lark_url:
+        description: 'Full Lark share URL (use "Copy link" in Lark and paste the whole thing).'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  add-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Append doc to docs.json
+        id: append
+        env:
+          FOLDER: ${{ inputs.folder }}
+          TITLE: ${{ inputs.title }}
+          LARK_URL: ${{ inputs.lark_url }}
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+
+          const folderName = (process.env.FOLDER || '').trim();
+          const title = (process.env.TITLE || '').trim();
+          const larkUrl = (process.env.LARK_URL || '').trim();
+
+          const match = larkUrl.match(/\/docx\/([A-Za-z0-9]+)/);
+          if (!match) {
+            console.error('Could not find a /docx/<id> pattern in the pasted URL: ' + larkUrl);
+            console.error('Expected something like https://<workspace>.larksuite.com/docx/<ID>?...');
+            process.exit(1);
+          }
+          const id = match[1];
+
+          const path = 'docs.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+
+          let folder = data.find(f => f.folder.toLowerCase() === folderName.toLowerCase());
+          let folderCreated = false;
+          if (!folder) {
+            folder = { folder: folderName, docs: [] };
+            data.push(folder);
+            folderCreated = true;
+          }
+
+          const existing = folder.docs.find(d => d.id === id);
+          let action;
+          if (existing) {
+            existing.title = title;
+            action = 'updated';
+          } else {
+            folder.docs.push({ title, id });
+            action = 'added';
+          }
+
+          fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+
+          console.log((folderCreated ? 'Created folder "' + folder.folder + '" and ' : '') +
+            action + ' entry: ' + title + ' (' + id + ')');
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,
+            'doc_id=' + id + '\n' +
+            'folder=' + folder.folder + '\n' +
+            'action=' + action + '\n');
+          NODE
+
+      - name: Commit and push
+        env:
+          TITLE: ${{ inputs.title }}
+          FOLDER: ${{ inputs.folder }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit (this doc/title was already in docs.json)."
+          else
+            git commit -m "Add campaign doc: ${TITLE} (${FOLDER})"
+            git push
+          fi
+
+      - name: Summary
+        env:
+          TITLE: ${{ inputs.title }}
+          DOC_ID: ${{ steps.append.outputs.doc_id }}
+          FOLDER_OUT: ${{ steps.append.outputs.folder }}
+          ACTION_OUT: ${{ steps.append.outputs.action }}
+        run: |
+          {
+            echo "### ${ACTION_OUT^} campaign doc"
+            echo "- **Folder:** ${FOLDER_OUT}"
+            echo "- **Title:** ${TITLE}"
+            echo "- **Doc ID:** \`${DOC_ID}\`"
+            echo "- **Live link:** https://contentmogul.github.io/opallac-pages/campaign-plans.html?doc=${DOC_ID}"
+          } >> "$GITHUB_STEP_SUMMARY"
