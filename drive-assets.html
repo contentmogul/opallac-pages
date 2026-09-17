@@ -321,7 +321,12 @@
         const status = document.createElement('span');
         status.className = 'save-indicator';
         attachAutoSave(cb, status, (value) =>
-          postUpdate({ sheetId: sheet.id, sheetName: sheet.name, row, updates: { [approvedHeader]: value } })
+          // sheet.name is the Drive FILE title, not the sheet's internal tab
+          // name — they don't match on the real Opallac sheet. Omit
+          // sheetName so the backend auto-resolves the first tab, same fix
+          // as commit 407930e for the old row-save path (regression caught
+          // live by platform on this follow-up — see CONA-2774).
+          postUpdate({ sheetId: sheet.id, row, updates: { [approvedHeader]: value } })
         );
         td.appendChild(cb);
         td.appendChild(status);
@@ -335,7 +340,8 @@
         const status = document.createElement('span');
         status.className = 'save-indicator';
         attachAutoSave(ta, status, (value) =>
-          postUpdate({ sheetId: sheet.id, sheetName: sheet.name, row, updates: { [feedbackHeader]: value } })
+          // Same sheetName fix as the Approved checkbox above.
+          postUpdate({ sheetId: sheet.id, row, updates: { [feedbackHeader]: value } })
         );
         td.appendChild(ta);
         td.appendChild(document.createElement('br'));
