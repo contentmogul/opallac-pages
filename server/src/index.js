@@ -3,10 +3,12 @@
 const express = require('express');
 const { GoogleAuth } = require('google-auth-library');
 
-// Same manifest the frontend (drive-assets.html) and the abandoned Apps Script
-// draft (apps-script/campaign-api.gs) both read from — this is the single
-// source of truth for which folders/sheets this API is allowed to touch.
-const MANIFEST_URL = 'https://contentmogul.github.io/opallac-pages/campaigns.json';
+// clients.json maps each client to their own registry Sheet (columns Label,
+// Drive Folder URL, Active). A folder/sheet is authorized only if it appears
+// as an active row in one of these registries — this replaces the old static
+// campaigns.json manifest so day-to-day campaign additions for an existing
+// client are just a new Sheet row, no repo/Actions involvement.
+const CLIENTS_URL = 'https://contentmogul.github.io/opallac-pages/clients.json';
 const DRIVE_API = 'https://www.googleapis.com/drive/v3';
 const SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets';
 
@@ -26,15 +28,71 @@ async function authHeaders() {
   return { Authorization: `Bearer ${token.token}` };
 }
 
-async function getManifest() {
-  const res = await fetch(MANIFEST_URL, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Could not read campaigns.json (HTTP ${res.status}).`);
+async function getClients() {
+  const res = await fetch(CLIENTS_URL, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Could not read clients.json (HTTP ${res.status}).`);
   return res.json();
 }
 
-async function isKnownFolder(folderId) {
-  const manifest = await getManifest();
-  return manifest.some((c) => c.folderId === folderId);
+// Mirrors the /folders/<id> extraction the add-campaign-folder.yml workflow
+// (and the retired manual campaigns.json flow) used, so a pasted Drive share
+// URL in the registry Sheet resolves the same way everywhere.
+function extractFolderId(url) {
+  const m = String(url || '').match(/\/folders\/([A-Za-z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+async function isKnownRegistrySheet(sheetId) {
+  const clients = await getClients();
+  return clients.some((c) => c.registrySheetId === sheetId);
+}
+
+// Reads a client's registry Sheet (Label, Drive Folder URL, Active columns,
+// matched by header name so column order doesn't matter) and returns the
+// active rows as {label, folderId}.
+async function readRegistryRows(sheetId, headers) {
+  const tab = await resolveFirstSheetName(sheetId, headers);
+  const res = await fetch(`${SHEETS_API}/${sheetId}/values/${encodeURIComponent(tab)}`, { headers });
+  if (!res.ok) throw new Error(`Registry sheet read failed for ${sheetId} (HTTP ${res.status}).`);
+  const body = await res.json();
+  const values = body.values || [];
+  if (values.length === 0) return [];
+
+  const headerRow = values[0].map((h) => String(h).trim().toLowerCase());
+  const labelIdx = headerRow.indexOf('label');
+  const urlIdx = headerRow.indexOf('drive folder url');
+  const activeIdx = headerRow.indexOf('active');
+
+  const rows = [];
+  for (let r = 1; r < values.length; r++) {
+    const rowValues = values[r] || [];
+    const activeRaw = activeIdx >= 0 ? rowValues[activeIdx] : '';
+    if (String(activeRaw).trim().toUpperCase() !== 'TRUE') continue;
+    const folderId = urlIdx >= 0 ? extractFolderId(rowValues[urlIdx]) : null;
+    if (!folderId) continue;
+    rows.push({ label: (labelIdx >= 0 && rowValues[labelIdx]) || '', folderId });
+  }
+  return rows;
+}
+
+// Every active row across every client's registry — the live replacement for
+// the old static campaigns.json manifest.
+async function getKnownFolders(headers) {
+  const clients = await getClients();
+  const known = [];
+  for (const c of clients) {
+    try {
+      known.push(...(await readRegistryRows(c.registrySheetId, headers)));
+    } catch (err) {
+      // Skip a registry we can no longer read rather than failing the whole check.
+    }
+  }
+  return known;
+}
+
+async function isKnownFolder(folderId, headers) {
+  const known = await getKnownFolders(headers);
+  return known.some((c) => c.folderId === folderId);
 }
 
 async function listSheetFilesInFolder(folderId, headers) {
@@ -48,12 +106,14 @@ async function listSheetFilesInFolder(folderId, headers) {
   return body.files || [];
 }
 
-// A sheet is "known" if it lives inside a known folder — mirrors the abandoned
-// Apps Script draft's isKnownSheet(): there is no separate per-sheet allowlist,
-// listFolder() is the only way the client ever learns a sheetId in the first place.
+// A sheet is "known" if it lives inside a known (registry-listed) folder —
+// mirrors the abandoned Apps Script draft's isKnownSheet(): there is no
+// separate per-sheet allowlist, listFolder() is the only way the client ever
+// learns a campaign sheetId in the first place. The registry sheet itself is
+// authorized separately via isKnownRegistrySheet().
 async function isKnownSheet(sheetId, headers) {
-  const manifest = await getManifest();
-  for (const c of manifest) {
+  const known = await getKnownFolders(headers);
+  for (const c of known) {
     try {
       const files = await listSheetFilesInFolder(c.folderId, headers);
       if (files.some((f) => f.id === sheetId)) return true;
@@ -64,11 +124,22 @@ async function isKnownSheet(sheetId, headers) {
   return false;
 }
 
+async function readRegistry(sheetId) {
+  if (!sheetId) return { ok: false, error: 'sheetId is required.' };
+  if (!(await isKnownRegistrySheet(sheetId))) return { ok: false, error: 'sheetId is not in clients.json.' };
+  const headers = await authHeaders();
+  const rows = await readRegistryRows(sheetId, headers);
+  return { ok: true, rows };
+}
+
 async function listFolder(folderId) {
   if (!folderId) return { ok: false, error: 'folderId is required.' };
-  if (!(await isKnownFolder(folderId))) return { ok: false, error: 'folderId is not in campaigns.json.' };
 
   const headers = await authHeaders();
+  if (!(await isKnownFolder(folderId, headers))) {
+    return { ok: false, error: 'folderId is not an active row in any client registry.' };
+  }
+
   const images = [];
   const videos = [];
   const sheets = [];
@@ -119,7 +190,7 @@ async function resolveFirstSheetName(sheetId, headers) {
 async function readSheet(sheetId, sheetName) {
   if (!sheetId) return { ok: false, error: 'sheetId is required.' };
   const headers = await authHeaders();
-  if (!(await isKnownSheet(sheetId, headers))) return { ok: false, error: 'sheetId is not in campaigns.json.' };
+  if (!(await isKnownSheet(sheetId, headers))) return { ok: false, error: 'sheetId is not in an active client registry.' };
 
   const tab = sheetName || (await resolveFirstSheetName(sheetId, headers));
   const res = await fetch(`${SHEETS_API}/${sheetId}/values/${encodeURIComponent(tab)}`, { headers });
@@ -150,7 +221,7 @@ async function writeUpdate(payload) {
 
   const headers = await authHeaders();
   if (!(await isKnownSheet(sheetId, headers))) {
-    return { ok: false, error: 'sheetId is not in campaigns.json — refusing to write.' };
+    return { ok: false, error: 'sheetId is not in an active client registry — refusing to write.' };
   }
 
   const tab = sheetName || (await resolveFirstSheetName(sheetId, headers));
@@ -208,6 +279,7 @@ app.get('/', async (req, res) => {
     let result;
     if (action === 'folder') result = await listFolder(folderId);
     else if (action === 'sheet') result = await readSheet(sheetId, sheetName);
+    else if (action === 'registry') result = await readRegistry(sheetId);
     else result = { ok: false, error: 'Unknown or missing action.' };
     res.json(result);
   } catch (err) {

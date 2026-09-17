@@ -379,15 +379,23 @@
 
   async function init() {
     try {
-      const [campaignsRes, configRes] = await Promise.all([
-        fetch('./campaigns.json', { cache: 'no-store' }),
+      const [clientsRes, configRes] = await Promise.all([
+        fetch('./clients.json', { cache: 'no-store' }),
         fetch('./config.json', { cache: 'no-store' })
       ]);
-      CAMPAIGNS = await campaignsRes.json();
+      const clients = await clientsRes.json();
       const config = await configRes.json();
       API_ENDPOINT = config.apiEndpoint;
+
+      const client = clients[0];
+      if (!client) throw new Error('clients.json has no clients configured.');
+
+      const res = await fetch(apiUrl({ action: 'registry', sheetId: client.registrySheetId }));
+      const registryData = await res.json();
+      if (!registryData.ok) throw new Error(registryData.error || 'Unknown error reading the campaign registry.');
+      CAMPAIGNS = registryData.rows.map(r => ({ label: r.label, folderId: r.folderId }));
     } catch (err) {
-      content.innerHTML = '<div class="status error">Could not load campaigns.json or config.json.</div>';
+      content.innerHTML = '<div class="status error">Could not load the campaign list:\n' + err.message + '</div>';
       return;
     }
 
