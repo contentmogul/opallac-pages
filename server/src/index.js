@@ -215,6 +215,143 @@ async function readSheet(sheetId, sheetName) {
   return { ok: true, headers: headerRow, rows };
 }
 
+// Per-ASSET (image/video) feedback lives in its own "Asset Feedback" tab
+// inside the same campaign spreadsheet, keyed by filename — separate from
+// the copy table's rows entirely, so per-copy-variant data and per-creative
+// approval never share a row space. The tab is created lazily, only the
+// first time someone actually comments on an asset in that campaign, so a
+// client's sheet gains no clutter until there's something to record.
+const ASSET_FEEDBACK_TAB = 'Asset Feedback';
+const ASSET_FEEDBACK_HEADERS = ['File', 'Approved', 'Feedback'];
+
+async function ensureAssetFeedbackTab(sheetId, headers) {
+  const metaRes = await fetch(`${SHEETS_API}/${sheetId}?fields=sheets.properties`, { headers });
+  if (!metaRes.ok) throw new Error(`Could not read spreadsheet metadata (HTTP ${metaRes.status}).`);
+  const meta = await metaRes.json();
+  const exists = (meta.sheets || []).some((s) => s.properties.title === ASSET_FEEDBACK_TAB);
+  if (exists) return;
+
+  const addRes = await fetch(`${SHEETS_API}/${sheetId}:batchUpdate`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests: [{ addSheet: { properties: { title: ASSET_FEEDBACK_TAB } } }] }),
+  });
+  if (!addRes.ok) {
+    const text = await addRes.text().catch(() => '');
+    throw new Error(`Could not create "${ASSET_FEEDBACK_TAB}" tab (HTTP ${addRes.status}): ${text}`);
+  }
+
+  const headerRes = await fetch(
+    `${SHEETS_API}/${sheetId}/values/${encodeURIComponent(ASSET_FEEDBACK_TAB + '!A1')}?valueInputOption=RAW`,
+    {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [ASSET_FEEDBACK_HEADERS] }),
+    }
+  );
+  if (!headerRes.ok) {
+    const text = await headerRes.text().catch(() => '');
+    throw new Error(`Could not write header row for "${ASSET_FEEDBACK_TAB}" (HTTP ${headerRes.status}): ${text}`);
+  }
+}
+
+async function readAssetFeedbackValues(sheetId, headers) {
+  await ensureAssetFeedbackTab(sheetId, headers);
+  const res = await fetch(`${SHEETS_API}/${sheetId}/values/${encodeURIComponent(ASSET_FEEDBACK_TAB)}`, { headers });
+  if (!res.ok) throw new Error(`Could not read "${ASSET_FEEDBACK_TAB}" (HTTP ${res.status}).`);
+  const body = await res.json();
+  return body.values && body.values.length ? body.values : [ASSET_FEEDBACK_HEADERS];
+}
+
+// Returns { ok, byFile: { "<filename>": { File, Approved, Feedback } } } so
+// the frontend can prefill previously-saved feedback on load, not just show
+// blank boxes every visit.
+async function readAssetFeedback(sheetId) {
+  if (!sheetId) return { ok: false, error: 'sheetId is required.' };
+  const headers = await authHeaders();
+  if (!(await isKnownSheet(sheetId, headers))) return { ok: false, error: 'sheetId is not in an active client registry.' };
+
+  const values = await readAssetFeedbackValues(sheetId, headers);
+  const headerRow = values[0];
+  const fileIdx = headerRow.indexOf('File');
+  const byFile = {};
+  for (let r = 1; r < values.length; r++) {
+    const rowValues = values[r] || [];
+    const file = rowValues[fileIdx];
+    if (!file) continue;
+    const obj = {};
+    headerRow.forEach((h, c) => {
+      obj[h] = rowValues[c] !== undefined ? rowValues[c] : '';
+    });
+    byFile[file] = obj;
+  }
+  return { ok: true, byFile };
+}
+
+// Writes {Approved, Feedback} for one filename, creating that row (and the
+// tab itself, on the very first call for a campaign) if it doesn't exist yet.
+async function writeAssetFeedback(payload) {
+  const { sheetId, fileName, updates } = payload || {};
+  if (!sheetId || !fileName) return { ok: false, error: 'sheetId and fileName are required.' };
+
+  const headers = await authHeaders();
+  if (!(await isKnownSheet(sheetId, headers))) {
+    return { ok: false, error: 'sheetId is not in an active client registry — refusing to write.' };
+  }
+
+  const values = await readAssetFeedbackValues(sheetId, headers);
+  const headerRow = values[0];
+  const fileIdx = headerRow.indexOf('File');
+
+  let targetRow = -1; // 1-based sheet row
+  for (let r = 1; r < values.length; r++) {
+    if ((values[r][fileIdx] || '') === fileName) {
+      targetRow = r + 1;
+      break;
+    }
+  }
+
+  if (targetRow === -1) {
+    const rowValues = headerRow.map((h) => {
+      if (h === 'File') return fileName;
+      if (Object.prototype.hasOwnProperty.call(updates || {}, h)) return updates[h];
+      return '';
+    });
+    const appendRes = await fetch(
+      `${SHEETS_API}/${sheetId}/values/${encodeURIComponent(ASSET_FEEDBACK_TAB)}:append?valueInputOption=RAW`,
+      {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [rowValues] }),
+      }
+    );
+    if (!appendRes.ok) {
+      const text = await appendRes.text().catch(() => '');
+      return { ok: false, error: `Could not create asset feedback row (HTTP ${appendRes.status}): ${text}` };
+    }
+    return { ok: true, created: true };
+  }
+
+  const data = [];
+  for (const header of Object.keys(updates || {})) {
+    const colIdx = headerRow.indexOf(header);
+    if (colIdx === -1) return { ok: false, error: `updates column "${header}" not found in "${ASSET_FEEDBACK_TAB}".` };
+    data.push({ range: `${ASSET_FEEDBACK_TAB}!${colToA1(colIdx)}${targetRow}`, values: [[updates[header]]] });
+  }
+  if (data.length === 0) return { ok: true, row: targetRow };
+
+  const res = await fetch(`${SHEETS_API}/${sheetId}/values:batchUpdate`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ valueInputOption: 'RAW', data }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    return { ok: false, error: `Sheets write failed (HTTP ${res.status}): ${text}` };
+  }
+  return { ok: true, row: targetRow };
+}
+
 async function writeUpdate(payload) {
   const { sheetId, sheetName, row, updates } = payload || {};
   if (!sheetId || !row) return { ok: false, error: 'sheetId and row are required.' };
@@ -280,6 +417,7 @@ app.get('/', async (req, res) => {
     if (action === 'folder') result = await listFolder(folderId);
     else if (action === 'sheet') result = await readSheet(sheetId, sheetName);
     else if (action === 'registry') result = await readRegistry(sheetId);
+    else if (action === 'assetFeedback') result = await readAssetFeedback(sheetId);
     else result = { ok: false, error: 'Unknown or missing action.' };
     res.json(result);
   } catch (err) {
@@ -290,7 +428,7 @@ app.get('/', async (req, res) => {
 app.post('/', async (req, res) => {
   try {
     const payload = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body;
-    const result = await writeUpdate(payload);
+    const result = payload && payload.fileName ? await writeAssetFeedback(payload) : await writeUpdate(payload);
     res.json(result);
   } catch (err) {
     res.json({ ok: false, error: String((err && err.message) || err) });
