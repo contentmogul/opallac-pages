@@ -54,8 +54,9 @@
   table.copy-table tr:last-child td { border-bottom: none; }
   table.copy-table td.wrap { white-space: pre-line; word-break: break-word; min-width: 200px; }
   table.copy-table td.approved-cell { text-align: center; }
+  table.copy-table td.feedback-cell { min-width: 260px; }
   table.copy-table td textarea {
-    width: 100%; min-height: 50px; font: inherit; padding: 6px 8px;
+    width: 100%; min-height: 90px; font: inherit; padding: 8px;
     border: 1px solid #ccc; border-radius: 6px; resize: vertical;
   }
 
@@ -72,14 +73,19 @@
   .field-value { color: #222; white-space: pre-line; word-break: break-word; }
   .field-value:empty::before { content: "—"; color: #ccc; }
 
-  .save-indicator { font-size: 12px; color: #8a8a8e; margin-left: 8px; white-space: nowrap; }
+  .save-indicator {
+    display: inline-block; font-size: 12px; font-weight: 600; color: #8a8a8e;
+    margin-left: 8px; white-space: nowrap;
+  }
+  .save-indicator.pending { color: #b8860b; }
   .save-indicator.ok { color: #1a8a3e; }
   .save-indicator.err { color: #c0392b; }
 
-  /* Full-size asset blocks (images + video), each with its own feedback */
+  /* Full-size asset blocks (images + video), each with its own feedback.
+     Capped narrower than the page's full content width per Lionel's request. */
   .asset-block {
     background: #fff; border: 1px solid #e2e2e6; border-radius: 10px;
-    overflow: hidden; margin-bottom: 24px;
+    overflow: hidden; margin-bottom: 24px; max-width: 820px;
   }
   .asset-block h4 {
     margin: 0; padding: 10px 16px; font-size: 13px; font-weight: 700;
@@ -87,6 +93,8 @@
     word-break: break-all;
   }
   .asset-block img { display: block; width: 100%; height: auto; background: #f0f0f2; }
+  /* padding-top is set inline per-video from its real aspect ratio (Drive's
+     videoMediaMetadata), falling back to 16:9 only when that's unavailable. */
   .asset-block .video-wrap { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
   .asset-block .video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .asset-feedback {
@@ -189,33 +197,74 @@
     return result;
   }
 
-  // Wires a checkbox or textarea to auto-save: checkboxes save immediately
-  // on change, text fields debounce while typing and also save on blur, so
-  // a save fires whether you keep typing, pause, or click away.
-  function attachAutoSave(el, statusEl, onSave) {
+  // A debounced save that hasn't fired yet is lost if the page closes,
+  // reloads, or navigates away first — that happened once already (a typed
+  // comment that never reached the Sheet). Every attachAutoSave field
+  // registers a flush function here, and pagehide/visibilitychange flush
+  // anything still pending via sendBeacon, which (unlike fetch) is not
+  // cancelled when the page is being torn down.
+  const pendingFlushers = new Set();
+  function flushAllPending() {
+    pendingFlushers.forEach(flush => flush());
+  }
+  window.addEventListener('pagehide', flushAllPending);
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushAllPending();
+  });
+
+  // Wires a checkbox or textarea to auto-save. `buildPayload(value)` returns
+  // the exact POST body for the current value — used both for the normal
+  // fetch-based save (checkboxes immediately, text fields debounced + on
+  // blur) and for the emergency sendBeacon flush on unload.
+  function attachAutoSave(el, statusEl, buildPayload) {
     let debounceTimer = null;
+    let hasPending = false;
+
+    function currentValue() {
+      return el.type === 'checkbox' ? el.checked : el.value;
+    }
+
     async function doSave() {
+      hasPending = false;
       statusEl.textContent = 'Saving…';
       statusEl.className = 'save-indicator';
       try {
-        const value = el.type === 'checkbox' ? el.checked : el.value;
-        await onSave(value);
-        statusEl.textContent = 'Saved';
+        const result = await postUpdate(buildPayload(currentValue()));
+        if (!result.ok) throw new Error(result.error || 'Unknown error.');
+        statusEl.textContent = 'Saved ✓';
         statusEl.className = 'save-indicator ok';
-        setTimeout(() => { if (statusEl.textContent === 'Saved') statusEl.textContent = ''; }, 2000);
+        setTimeout(() => { if (statusEl.textContent === 'Saved ✓') statusEl.textContent = ''; }, 2500);
       } catch (err) {
         statusEl.textContent = 'Error: ' + err.message;
         statusEl.className = 'save-indicator err';
       }
     }
+
+    function flushNow() {
+      if (!hasPending) return;
+      hasPending = false;
+      clearTimeout(debounceTimer);
+      try {
+        const blob = new Blob([JSON.stringify(buildPayload(currentValue()))], { type: 'text/plain' });
+        navigator.sendBeacon(API_ENDPOINT, blob);
+      } catch (err) {
+        // Best-effort only — nothing more we can do once the page is closing.
+      }
+    }
+    pendingFlushers.add(flushNow);
+
     if (el.type === 'checkbox') {
       el.addEventListener('change', doSave);
     } else {
       el.addEventListener('input', () => {
+        hasPending = true;
+        statusEl.textContent = 'Unsaved…';
+        statusEl.className = 'save-indicator pending';
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(doSave, 900);
+        debounceTimer = setTimeout(doSave, 600);
       });
       el.addEventListener('blur', () => {
+        if (!hasPending) return;
         clearTimeout(debounceTimer);
         doSave();
       });
@@ -320,13 +369,13 @@
         cb.checked = values[approvedHeader] === true || String(values[approvedHeader]).toUpperCase() === 'TRUE';
         const status = document.createElement('span');
         status.className = 'save-indicator';
+        // sheet.name is the Drive FILE title, not the sheet's internal tab
+        // name — they don't match on the real Opallac sheet. Omit sheetName
+        // so the backend auto-resolves the first tab, same fix as commit
+        // 407930e for the old row-save path (regression caught live by
+        // platform on this follow-up — see CONA-2774).
         attachAutoSave(cb, status, (value) =>
-          // sheet.name is the Drive FILE title, not the sheet's internal tab
-          // name — they don't match on the real Opallac sheet. Omit
-          // sheetName so the backend auto-resolves the first tab, same fix
-          // as commit 407930e for the old row-save path (regression caught
-          // live by platform on this follow-up — see CONA-2774).
-          postUpdate({ sheetId: sheet.id, row, updates: { [approvedHeader]: value } })
+          ({ sheetId: sheet.id, row, updates: { [approvedHeader]: value } })
         );
         td.appendChild(cb);
         td.appendChild(status);
@@ -335,13 +384,13 @@
 
       if (feedbackHeader) {
         const td = document.createElement('td');
+        td.className = 'feedback-cell';
         const ta = document.createElement('textarea');
         ta.value = values[feedbackHeader] || '';
         const status = document.createElement('span');
         status.className = 'save-indicator';
         attachAutoSave(ta, status, (value) =>
-          // Same sheetName fix as the Approved checkbox above.
-          postUpdate({ sheetId: sheet.id, row, updates: { [feedbackHeader]: value } })
+          ({ sheetId: sheet.id, row, updates: { [feedbackHeader]: value } })
         );
         td.appendChild(ta);
         td.appendChild(document.createElement('br'));
@@ -418,10 +467,10 @@
     if (!primarySheetId) return grid; // No sheet in this folder to save into.
 
     attachAutoSave(cb, cbStatus, (value) =>
-      postUpdate({ sheetId: primarySheetId, fileName, updates: { Approved: value } })
+      ({ sheetId: primarySheetId, fileName, updates: { Approved: value } })
     );
     attachAutoSave(ta, taStatus, (value) =>
-      postUpdate({ sheetId: primarySheetId, fileName, updates: { Feedback: value } })
+      ({ sheetId: primarySheetId, fileName, updates: { Feedback: value } })
     );
     return grid;
   }
@@ -445,16 +494,27 @@
       }
 
       const { headers, rows } = sheetData;
-      const copyTable = renderCopyTable(headers, rows, sheet);
-      if (copyTable) section.appendChild(copyTable);
 
+      // Campaign details first (Lionel's request) — the copy table repeats
+      // per variant, so leading with the once-only overview reads better.
       const campaignInfo = renderCampaignInfo(headers, rows);
       if (campaignInfo) {
         const infoHeading = document.createElement('h3');
         infoHeading.textContent = 'Campaign details';
-        infoHeading.style.marginTop = '24px';
+        infoHeading.style.marginBottom = '12px';
         section.appendChild(infoHeading);
         section.appendChild(campaignInfo);
+      }
+
+      const copyTable = renderCopyTable(headers, rows, sheet);
+      if (copyTable) {
+        if (campaignInfo) {
+          const copyHeading = document.createElement('h3');
+          copyHeading.textContent = 'Copy';
+          copyHeading.style.marginTop = '24px';
+          section.appendChild(copyHeading);
+        }
+        section.appendChild(copyTable);
       }
 
       content.appendChild(section);
@@ -495,6 +555,12 @@
         block.appendChild(h4);
         const wrap = document.createElement('div');
         wrap.className = 'video-wrap';
+        // Real aspect ratio from Drive's videoMediaMetadata when available,
+        // instead of assuming 16:9 — this video is actually portrait, and
+        // forcing landscape either stretched or letterboxed it.
+        if (v.width && v.height) {
+          wrap.style.paddingTop = (v.height / v.width * 100) + '%';
+        }
         const iframe = document.createElement('iframe');
         iframe.src = VIDEO_PREVIEW(v.id);
         iframe.allow = 'autoplay';

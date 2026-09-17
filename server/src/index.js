@@ -149,14 +149,23 @@ async function listFolder(folderId) {
   do {
     const q = encodeURIComponent(`'${folderId}' in parents and trashed = false`);
     const pageParam = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '';
-    const url = `${DRIVE_API}/files?q=${q}&fields=files(id,name,mimeType),nextPageToken&pageSize=1000${pageParam}`;
+    const url = `${DRIVE_API}/files?q=${q}&fields=files(id,name,mimeType,videoMediaMetadata(width,height)),nextPageToken&pageSize=1000${pageParam}`;
     const res = await fetch(url, { headers });
     if (!res.ok) throw new Error(`Drive list failed for folder ${folderId} (HTTP ${res.status}).`);
     const body = await res.json();
     for (const f of body.files || []) {
       const entry = { id: f.id, name: f.name };
       if (f.mimeType.startsWith('image/')) images.push(entry);
-      else if (f.mimeType.startsWith('video/')) videos.push(entry);
+      else if (f.mimeType.startsWith('video/')) {
+        // Real dimensions from Drive so the frontend can size the preview
+        // to the video's actual aspect ratio instead of assuming 16:9.
+        const meta = f.videoMediaMetadata;
+        if (meta && meta.width && meta.height) {
+          entry.width = meta.width;
+          entry.height = meta.height;
+        }
+        videos.push(entry);
+      }
       else if (f.mimeType === 'application/vnd.google-apps.spreadsheet') sheets.push(entry);
       else if (f.mimeType === 'application/vnd.google-apps.document') docs.push(entry);
     }
