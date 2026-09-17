@@ -41,7 +41,18 @@
   .status.error { color: #c0392b; white-space: pre-wrap; }
 
   /* Copy-variant table */
-  .table-wrap { overflow-x: auto; border: 1px solid #e2e2e6; border-radius: 10px; background: #fff; }
+  .scroll-hint {
+    font-size: 12px; color: #8a8a8e; margin: 0 0 6px; text-align: center;
+  }
+  .table-wrap { position: relative; overflow-x: auto; border: 1px solid #e2e2e6; border-radius: 10px; background: #fff; }
+  /* Right-edge fade signals "more columns this way" — only added when the
+     table actually overflows, and fades out once scrolled to the end. */
+  .table-wrap.scrollable::after {
+    content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 28px;
+    background: linear-gradient(to right, transparent, #fff);
+    pointer-events: none; opacity: 1; transition: opacity 0.2s;
+  }
+  .table-wrap.scrollable.at-end::after { opacity: 0; }
   table.copy-table { border-collapse: collapse; width: 100%; min-width: 640px; }
   table.copy-table th, table.copy-table td {
     padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 14px;
@@ -118,6 +129,8 @@
     nav li a.active { background: #1e3a5f; }
     h2.campaign-title { color: #eee; }
     .table-wrap, table.copy-table th, .field-grid, .asset-block { background: #2c2c2e; border-color: #3a3a3c; }
+    .table-wrap.scrollable::after { background: linear-gradient(to right, transparent, #2c2c2e); }
+    .scroll-hint { color: #8a8a8e; }
     table.copy-table th, .asset-block h4 { background: #262628; }
     table.copy-table th, table.copy-table td, .field-grid .field-label, .field-grid .field-value, .asset-feedback { border-color: #3a3a3c; }
     .field-label, table.copy-table th, .asset-feedback .field-label { color: #bbb; }
@@ -579,7 +592,42 @@
     if (!sheetSections.length && !folderData.images.length && !folderData.videos.length) {
       content.innerHTML = '<div class="status">This folder has no images, videos, or sheets yet.</div>';
     }
+
+    setupScrollHints();
   }
+
+  // A table that needs horizontal scrolling gives no visual signal that
+  // more columns exist off-screen — easy to miss, especially on mobile
+  // (Lionel's report: the card looked "complete" at 2 columns). Adds a
+  // fade on the scrollable edge plus an explicit hint line, both only when
+  // the table actually overflows its container, and the fade clears once
+  // scrolled to the end.
+  function setupScrollHints() {
+    document.querySelectorAll('.table-wrap').forEach(wrap => {
+      const table = wrap.querySelector('table');
+      if (!table) return;
+      const needsScroll = table.scrollWidth > wrap.clientWidth + 1;
+      wrap.classList.toggle('scrollable', needsScroll);
+      if (!needsScroll) return;
+
+      const prev = wrap.previousElementSibling;
+      if (!prev || !prev.classList.contains('scroll-hint')) {
+        const hint = document.createElement('div');
+        hint.className = 'scroll-hint';
+        hint.textContent = '← Scroll sideways to see the rest of the table →';
+        wrap.parentNode.insertBefore(hint, wrap);
+      }
+
+      function updateFadeState() {
+        const atEnd = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - 1;
+        wrap.classList.toggle('at-end', atEnd);
+      }
+      updateFadeState();
+      wrap.addEventListener('scroll', updateFadeState, { passive: true });
+    });
+  }
+
+  window.addEventListener('resize', () => setupScrollHints());
 
   async function init() {
     let API_CLIENTS = [];
