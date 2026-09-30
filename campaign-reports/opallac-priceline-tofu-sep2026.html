@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Priceline — Meta TOFU Campaign Report</title>
+<meta name="description" content="Meta Traffic campaign report for OPAL-0009, prepared by Content Mogul.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --background: hsl(330 24% 98.8%);
+    --foreground: hsl(222 40% 11%);
+    --muted-foreground: hsl(222 15% 40%);
+    --primary: hsl(315 68% 49%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(320 30% 96.5%);
+    --accent: hsl(322 72% 96%);
+    --accent-foreground: hsl(315 58% 38%);
+    --border: hsl(324 22% 90%);
+    --card: hsl(0 0% 100%);
+    --chart-1: hsl(327 66% 52%);
+    --chart-2: hsl(258 60% 58%);
+    --chart-3: hsl(199 76% 46%);
+    --chart-4: hsl(160 55% 42%);
+    --chart-5: hsl(38 84% 56%);
+    --radius: 0.625rem;
+    --sidebar-gradient: linear-gradient(178deg, hsl(317 66% 50%) 0%, hsl(313 60% 43%) 100%);
+    --meta-bg: #DBEAFE;
+    --meta-fg: #1D4ED8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-foreground); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    background: var(--sidebar-gradient);
+    color: #fff;
+    padding: 48px 0 40px;
+  }
+  .brand {
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    font-size: 15px;
+    text-transform: uppercase;
+    opacity: 0.9;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0 0 14px;
+    max-width: 700px;
+    line-height: 1.25;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .chip-meta { background: var(--meta-bg); color: var(--meta-fg); }
+  .chip-objective { background: rgba(255,255,255,0.18); color: #fff; }
+  .chip-flight { background: rgba(255,255,255,0.12); color: #fff; font-weight: 500; }
+
+  main { padding: 40px 0 24px; }
+  section { margin-bottom: 44px; }
+  h2 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-foreground);
+    margin: 0 0 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  /* Overview */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 28px;
+  }
+  .overview-item .label { font-size: 12px; color: var(--muted-foreground); margin-bottom: 4px; }
+  .overview-item .value { font-size: 15px; font-weight: 600; }
+
+  /* Headline stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 16px;
+  }
+  .stat .stat-label { font-size: 12px; color: var(--muted-foreground); margin-bottom: 6px; }
+  .stat .stat-value { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; }
+  .stat.primary { background: var(--accent); border-color: var(--accent); }
+  .stat.primary .stat-value { color: var(--accent-foreground); }
+
+  /* Delivery over time */
+  .chart-card { padding: 28px 24px 20px; }
+  .chart-note { font-size: 13px; color: var(--muted-foreground); margin: 0 0 20px; }
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    height: 200px;
+    padding: 0 4px;
+  }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+  .bar-value { font-size: 11px; font-weight: 700; color: var(--foreground); margin-bottom: 6px; white-space: nowrap; }
+  .bar {
+    width: 100%;
+    max-width: 40px;
+    border-radius: 6px 6px 0 0;
+    background: var(--chart-1);
+  }
+  .bar-date { font-size: 11px; color: var(--muted-foreground); margin-top: 8px; }
+  .chart-legend { display: flex; gap: 18px; margin-top: 18px; font-size: 12px; color: var(--muted-foreground); }
+  .legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: var(--chart-1); margin-right: 6px; }
+
+  /* Creative breakdown */
+  .creative-list { display: flex; flex-direction: column; gap: 20px; }
+  .creative-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+  }
+  .creative-media {
+    position: relative;
+    background: var(--secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+  }
+  .creative-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .creative-media iframe { width: 100%; height: 320px; border: 0; }
+  .rank-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 11px;
+    border-radius: 999px;
+    z-index: 2;
+  }
+  .rank-badge.top { background: var(--chart-4); }
+  .creative-body { padding: 22px 24px; }
+  .creative-title { font-size: 15px; font-weight: 700; margin: 0 0 2px; }
+  .creative-sub { font-size: 12px; color: var(--muted-foreground); margin: 0 0 18px; }
+  .creative-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .creative-metrics .m-label { font-size: 11px; color: var(--muted-foreground); margin-bottom: 3px; }
+  .creative-metrics .m-value { font-size: 16px; font-weight: 700; }
+  .type-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--secondary);
+    color: var(--foreground);
+  }
+
+  /* Takeaway */
+  .takeaway-card {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 28px;
+  }
+  .takeaway-card h2 { color: var(--accent-foreground); }
+  .takeaway-card p { margin: 0 0 14px; font-size: 15px; }
+  .takeaway-card p:last-child { margin-bottom: 0; }
+  .takeaway-card strong { color: var(--accent-foreground); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0 48px;
+    font-size: 12px;
+    color: var(--muted-foreground);
+  }
+
+  @media (max-width: 720px) {
+    .overview-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .creative-card { grid-template-columns: 1fr; }
+    .creative-media { min-height: 260px; }
+    .creative-metrics { grid-template-columns: repeat(2, 1fr); }
+    .bars { gap: 6px; }
+    .bar-value { font-size: 9px; }
+    .bar-date { font-size: 9px; }
+    .hero h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brand">Content Mogul — Campaign Report</div>
+    <h1>OPAL-0009-Meta-TOFU-Priceline-40-OFF-16-09-2026-Content-Mogul</h1>
+    <div class="hero-meta">
+      <span class="chip chip-meta">META ADS</span>
+      <span class="chip chip-objective">Traffic (TOFU)</span>
+      <span class="chip chip-flight">16 – 23 Sep 2026</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="overview">
+    <h2>Campaign Overview</h2>
+    <div class="card overview-grid">
+      <div class="overview-item">
+        <div class="label">Client</div>
+        <div class="value">Priceline (Opallac)</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Objective</div>
+        <div class="value">Traffic — link clicks to website</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Platform</div>
+        <div class="value">Meta — Facebook &amp; Instagram</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Ad set</div>
+        <div class="value">Advantage+ — Cold Audience, Women — Website Link Clicks</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Flight dates</div>
+        <div class="value">16 Sep – 23 Sep 2026 (8 days active delivery)</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Currency</div>
+        <div class="value">AUD</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="headline-results">
+    <h2>Headline Results</h2>
+    <div class="stats-grid">
+      <div class="stat primary">
+        <div class="stat-label">Total spend</div>
+        <div class="stat-value">$2,995.58</div>
+      </div>
+      <div class="stat primary">
+        <div class="stat-label">Link clicks</div>
+        <div class="stat-value">21,304</div>
+      </div>
+      <div class="stat primary">
+        <div class="stat-label">CTR (link)</div>
+        <div class="stat-value">3.51%</div>
+      </div>
+      <div class="stat primary">
+        <div class="stat-label">CPC</div>
+        <div class="stat-value">$0.14</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Impressions</div>
+        <div class="stat-value">607,292</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Reach</div>
+        <div class="stat-value">542,645</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Frequency</div>
+        <div class="stat-value">1.12</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">CPM</div>
+        <div class="stat-value">$4.93</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="delivery-over-time">
+    <h2>Spend &amp; Delivery Over Time</h2>
+    <div class="card chart-card">
+      <p class="chart-note">Daily spend, Meta-reported. Delivery ran 16–23 Sep, then concluded.</p>
+      <div class="bars">
+        <div class="bar-col"><div class="bar-value">$255</div><div class="bar" style="height:60.5%"></div><div class="bar-date">16 Sep</div></div>
+        <div class="bar-col"><div class="bar-value">$360</div><div class="bar" style="height:85.4%"></div><div class="bar-date">17 Sep</div></div>
+        <div class="bar-col"><div class="bar-value">$394</div><div class="bar" style="height:93.4%"></div><div class="bar-date">18 Sep</div></div>
+        <div class="bar-col"><div class="bar-value">$400</div><div class="bar" style="height:94.8%"></div><div class="bar-date">19 Sep</div></div>
+        <div class="bar-col"><div class="bar-value">$421</div><div class="bar" style="height:100%"></div><div class="bar-date">20 Sep</div></div>
+        <div class="bar-col"><div class="bar-value">$386</div><div class="bar" style="height:91.5%"></div><div class="bar-date">21 Sep</div></div>
+        <div class="bar-col"><div class="bar-value">$392</div><div class="bar" style="height:93.1%"></div><div class="bar-date">22 Sep</div></div>
+        <div class="bar-col"><div class="bar-value">$388</div><div class="bar" style="height:92%"></div><div class="bar-date">23 Sep</div></div>
+      </div>
+      <div class="chart-legend"><span><span class="legend-dot"></span>Daily spend (AUD)</span></div>
+    </div>
+  </section>
+
+  <section id="creative-breakdown">
+    <h2>Creative Breakdown — Best to Worst</h2>
+    <div class="creative-list">
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge top">Top performer</span>
+          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1zPsYbpgGPuAVtTEH_prjIdwVmqLIZ898" loading="lazy" alt="Creative 01">
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">Creative 01</p>
+          <p class="creative-sub"><span class="type-badge">Image</span> &nbsp; 96.2% of campaign spend</p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$2,881.43</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">3.64%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.14</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">20,868</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge">2</span>
+          <img src="https://drive.google.com/thumbnail?sz=w2000&id=12ncIIKHW5cyhYSJEzRMJsiMXPv0NMLdL" loading="lazy" alt="Creative 02">
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">Creative 02</p>
+          <p class="creative-sub"><span class="type-badge">Image</span></p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$64.21</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">1.77%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.21</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">301</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge">3</span>
+          <iframe src="https://drive.google.com/file/d/1NTwE7ADvDssAdyiGNiv08kMtWSb8XFTi/preview" allow="autoplay" loading="lazy" title="Creative 03 video"></iframe>
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">Creative 03</p>
+          <p class="creative-sub"><span class="type-badge">Video</span></p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$35.83</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">0.84%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.38</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">94</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge">4</span>
+          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1w__kzD08tOx2Sc4_WWFvHpF-qtkNCDE_" loading="lazy" alt="Creative 04">
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">Creative 04</p>
+          <p class="creative-sub"><span class="type-badge">Image</span></p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$8.44</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">0.83%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.31</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">27</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge">5</span>
+          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1QS8gySNu8CvxVYR5a5xo88dzQwJmFIUY" loading="lazy" alt="Creative 05">
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">Creative 05</p>
+          <p class="creative-sub"><span class="type-badge">Image</span></p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$5.67</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">0.67%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.41</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">14</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="takeaway">
+    <h2>Takeaway &amp; Recommendation</h2>
+    <div class="takeaway-card">
+      <p><strong>Creative 01 carried the campaign</strong> — 96% of spend and 98% of clicks, at the strongest CTR of the set (3.64%, more than double Creative 02's 1.77%). Meta's own delivery optimization concentrated budget behind it within the first few days, which is exactly what a Traffic-objective auction is supposed to do when one asset clearly outperforms.</p>
+      <p><strong>Recommendation:</strong> treat Creative 01's angle/format as the proven direction for this audience and prioritise it — and 1–2 close variants — in the next flight. Creatives 02–03 saw too little spend to call conclusively; a longer, better-funded test would be needed before judging them. Creatives 04–05 saw minimal delivery and are reasonable candidates to retire or replace with fresh executions next round.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  Prepared by Content Mogul for Priceline · Meta delivery data, 16–23 Sep 2026 · Generated 30 Sep 2026
+</footer>
+
+</body>
+</html>
