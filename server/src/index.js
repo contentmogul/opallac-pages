@@ -44,7 +44,7 @@ function extractFolderId(url) {
 
 async function isKnownRegistrySheet(sheetId) {
   const clients = await getClients();
-  return clients.some((c) => c.registrySheetId === sheetId);
+  return clients.some((c) => c.registrySheetId === sheetId || c.historicalRegistrySheetId === sheetId);
 }
 
 // Reads a client's registry Sheet (Label, Drive Folder URL, Active columns,
@@ -76,15 +76,21 @@ async function readRegistryRows(sheetId, headers) {
 }
 
 // Every active row across every client's registry — the live replacement for
-// the old static campaigns.json manifest.
+// the old static campaigns.json manifest. A client may also carry a second,
+// historicalRegistrySheetId registry for closed/past campaigns that must not
+// appear in the client-approval-facing registrySheetId list (e.g. a report
+// folder authorized for embedding but never shown as a plan awaiting sign-off).
 async function getKnownFolders(headers) {
   const clients = await getClients();
   const known = [];
   for (const c of clients) {
-    try {
-      known.push(...(await readRegistryRows(c.registrySheetId, headers)));
-    } catch (err) {
-      // Skip a registry we can no longer read rather than failing the whole check.
+    const sheetIds = [c.registrySheetId, c.historicalRegistrySheetId].filter(Boolean);
+    for (const sheetId of sheetIds) {
+      try {
+        known.push(...(await readRegistryRows(sheetId, headers)));
+      } catch (err) {
+        // Skip a registry we can no longer read rather than failing the whole check.
+      }
     }
   }
   return known;

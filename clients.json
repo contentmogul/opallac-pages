@@ -1,3 +1,7 @@
 [
-  { "client": "Opallac", "registrySheetId": "1i93kmSvqAuO32yWymRxnF70ciMGJN6ZebnBw8X3COQo" }
+  {
+    "client": "Opallac",
+    "registrySheetId": "1i93kmSvqAuO32yWymRxnF70ciMGJN6ZebnBw8X3COQo",
+    "historicalRegistrySheetId": "1eIjeVhUCJCpTRCTQsmjhIj7BNVX6m5SY5Cg70PXXl4o"
+  }
 ]
