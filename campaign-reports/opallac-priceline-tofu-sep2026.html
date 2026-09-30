@@ -96,14 +96,14 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 24px;
+    padding: 32px;
   }
 
   /* Overview */
   .overview-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px 28px;
+    gap: 32px 28px;
   }
   .overview-item .label { font-size: 12px; color: var(--muted-foreground); margin-bottom: 4px; }
   .overview-item .value { font-size: 15px; font-weight: 600; }
@@ -155,7 +155,8 @@
     border-radius: var(--radius);
     overflow: hidden;
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 160px 1fr;
+    align-items: stretch;
   }
   .creative-media {
     position: relative;
@@ -163,10 +164,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 320px;
+    min-height: 160px;
+  }
+  .creative-media.is-video {
+    min-height: 0;
+    height: auto;
+    align-self: start;
   }
   .creative-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  .creative-media iframe { width: 100%; height: 320px; border: 0; }
+  .creative-media iframe { width: 100%; height: 100%; border: 0; display: block; }
   .rank-badge {
     position: absolute;
     top: 12px;
@@ -180,7 +186,7 @@
     z-index: 2;
   }
   .rank-badge.top { background: var(--chart-4); }
-  .creative-body { padding: 22px 24px; }
+  .creative-body { padding: 18px 22px; }
   .creative-title { font-size: 15px; font-weight: 700; margin: 0 0 2px; }
   .creative-sub { font-size: 12px; color: var(--muted-foreground); margin: 0 0 18px; }
   .creative-metrics {
@@ -200,18 +206,6 @@
     color: var(--foreground);
   }
 
-  /* Takeaway */
-  .takeaway-card {
-    background: var(--accent);
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    padding: 28px;
-  }
-  .takeaway-card h2 { color: var(--accent-foreground); }
-  .takeaway-card p { margin: 0 0 14px; font-size: 15px; }
-  .takeaway-card p:last-child { margin-bottom: 0; }
-  .takeaway-card strong { color: var(--accent-foreground); }
-
   footer {
     border-top: 1px solid var(--border);
     padding: 24px 0 48px;
@@ -223,7 +217,8 @@
     .overview-grid { grid-template-columns: repeat(2, 1fr); }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .creative-card { grid-template-columns: 1fr; }
-    .creative-media { min-height: 260px; }
+    .creative-media { min-height: 180px; }
+    .creative-media.is-video { min-height: 0; }
     .creative-metrics { grid-template-columns: repeat(2, 1fr); }
     .bars { gap: 6px; }
     .bar-value { font-size: 9px; }
@@ -341,10 +336,10 @@
       <div class="creative-card">
         <div class="creative-media">
           <span class="rank-badge top">Top performer</span>
-          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1zPsYbpgGPuAVtTEH_prjIdwVmqLIZ898" loading="lazy" alt="Creative 01">
+          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1zPsYbpgGPuAVtTEH_prjIdwVmqLIZ898" loading="lazy" alt="Priceline-20260915-171859.jpeg">
         </div>
         <div class="creative-body">
-          <p class="creative-title">Creative 01</p>
+          <p class="creative-title">Priceline-20260915-171859.jpeg</p>
           <p class="creative-sub"><span class="type-badge">Image</span> &nbsp; 96.2% of campaign spend</p>
           <div class="creative-metrics">
             <div><div class="m-label">Spend</div><div class="m-value">$2,881.43</div></div>
@@ -358,10 +353,10 @@
       <div class="creative-card">
         <div class="creative-media">
           <span class="rank-badge">2</span>
-          <img src="https://drive.google.com/thumbnail?sz=w2000&id=12ncIIKHW5cyhYSJEzRMJsiMXPv0NMLdL" loading="lazy" alt="Creative 02">
+          <img src="https://drive.google.com/thumbnail?sz=w2000&id=12ncIIKHW5cyhYSJEzRMJsiMXPv0NMLdL" loading="lazy" alt="Priceline-20260915-171906.png">
         </div>
         <div class="creative-body">
-          <p class="creative-title">Creative 02</p>
+          <p class="creative-title">Priceline-20260915-171906.png</p>
           <p class="creative-sub"><span class="type-badge">Image</span></p>
           <div class="creative-metrics">
             <div><div class="m-label">Spend</div><div class="m-value">$64.21</div></div>
@@ -373,12 +368,12 @@
       </div>
 
       <div class="creative-card">
-        <div class="creative-media">
+        <div class="creative-media is-video" style="aspect-ratio: 720 / 1280;">
           <span class="rank-badge">3</span>
-          <iframe src="https://drive.google.com/file/d/1NTwE7ADvDssAdyiGNiv08kMtWSb8XFTi/preview" allow="autoplay" loading="lazy" title="Creative 03 video"></iframe>
+          <iframe src="https://drive.google.com/file/d/1NTwE7ADvDssAdyiGNiv08kMtWSb8XFTi/preview" allow="autoplay" loading="lazy" title="Priceline-20260915-171922.mp4"></iframe>
         </div>
         <div class="creative-body">
-          <p class="creative-title">Creative 03</p>
+          <p class="creative-title">Priceline-20260915-171922.mp4</p>
           <p class="creative-sub"><span class="type-badge">Video</span></p>
           <div class="creative-metrics">
             <div><div class="m-label">Spend</div><div class="m-value">$35.83</div></div>
@@ -392,10 +387,10 @@
       <div class="creative-card">
         <div class="creative-media">
           <span class="rank-badge">4</span>
-          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1w__kzD08tOx2Sc4_WWFvHpF-qtkNCDE_" loading="lazy" alt="Creative 04">
+          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1w__kzD08tOx2Sc4_WWFvHpF-qtkNCDE_" loading="lazy" alt="Priceline-20260915-171853.png">
         </div>
         <div class="creative-body">
-          <p class="creative-title">Creative 04</p>
+          <p class="creative-title">Priceline-20260915-171853.png</p>
           <p class="creative-sub"><span class="type-badge">Image</span></p>
           <div class="creative-metrics">
             <div><div class="m-label">Spend</div><div class="m-value">$8.44</div></div>
@@ -409,10 +404,10 @@
       <div class="creative-card">
         <div class="creative-media">
           <span class="rank-badge">5</span>
-          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1QS8gySNu8CvxVYR5a5xo88dzQwJmFIUY" loading="lazy" alt="Creative 05">
+          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1QS8gySNu8CvxVYR5a5xo88dzQwJmFIUY" loading="lazy" alt="Priceline-20260915-171912.png">
         </div>
         <div class="creative-body">
-          <p class="creative-title">Creative 05</p>
+          <p class="creative-title">Priceline-20260915-171912.png</p>
           <p class="creative-sub"><span class="type-badge">Image</span></p>
           <div class="creative-metrics">
             <div><div class="m-label">Spend</div><div class="m-value">$5.67</div></div>
@@ -423,14 +418,6 @@
         </div>
       </div>
 
-    </div>
-  </section>
-
-  <section id="takeaway">
-    <h2>Takeaway &amp; Recommendation</h2>
-    <div class="takeaway-card">
-      <p><strong>Creative 01 carried the campaign</strong> — 96% of spend and 98% of clicks, at the strongest CTR of the set (3.64%, more than double Creative 02's 1.77%). Meta's own delivery optimization concentrated budget behind it within the first few days, which is exactly what a Traffic-objective auction is supposed to do when one asset clearly outperforms.</p>
-      <p><strong>Recommendation:</strong> treat Creative 01's angle/format as the proven direction for this audience and prioritise it — and 1–2 close variants — in the next flight. Creatives 02–03 saw too little spend to call conclusively; a longer, better-funded test would be needed before judging them. Creatives 04–05 saw minimal delivery and are reasonable candidates to retire or replace with fresh executions next round.</p>
     </div>
   </section>
 
