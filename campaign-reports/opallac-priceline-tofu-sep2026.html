@@ -81,7 +81,7 @@
   .chip-objective { background: rgba(255,255,255,0.18); color: #fff; }
   .chip-flight { background: rgba(255,255,255,0.12); color: #fff; font-weight: 500; }
 
-  main { padding: 64px 0 24px; }
+  main { padding: 96px 0 24px; }
   section { margin-bottom: 44px; }
   h2 {
     font-size: 12px;
@@ -169,18 +169,26 @@
     align-items: center;
     justify-content: center;
     min-height: 160px;
+    text-decoration: none;
+    color: inherit;
   }
-  .creative-media.is-video {
-    min-height: 0;
-    height: auto;
-    align-self: start;
-  }
-  /* Google's Drive /preview player has its own toolbar + play-button chrome that
-     breaks (missing play icon, blank panel) below roughly 240px wide - too narrow
-     to share the 160px column the plain image thumbnails use. */
-  .creative-card.video-card { grid-template-columns: 260px 1fr; }
   .creative-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  .creative-media iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .play-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    z-index: 2;
+  }
   .rank-badge {
     position: absolute;
     top: 12px;
@@ -226,7 +234,6 @@
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .creative-card { grid-template-columns: 1fr; }
     .creative-media { min-height: 180px; }
-    .creative-media.is-video { min-height: 0; }
     .creative-metrics { grid-template-columns: repeat(2, 1fr); }
     .bars { gap: 6px; }
     .bar-pair { gap: 3px; }
@@ -404,11 +411,12 @@
         </div>
       </div>
 
-      <div class="creative-card video-card">
-        <div class="creative-media is-video" style="aspect-ratio: 720 / 1280;">
+      <div class="creative-card">
+        <a class="creative-media" href="https://drive.google.com/file/d/1NTwE7ADvDssAdyiGNiv08kMtWSb8XFTi/view" target="_blank" rel="noopener">
           <span class="rank-badge">3</span>
-          <iframe src="https://drive.google.com/file/d/1NTwE7ADvDssAdyiGNiv08kMtWSb8XFTi/preview" allow="autoplay" loading="lazy" title="Priceline-20260915-171922.mp4"></iframe>
-        </div>
+          <img src="https://drive.google.com/thumbnail?sz=w2000&id=1NTwE7ADvDssAdyiGNiv08kMtWSb8XFTi" loading="lazy" alt="Priceline-20260915-171922.mp4">
+          <span class="play-badge" aria-hidden="true">&#9658;</span>
+        </a>
         <div class="creative-body">
           <p class="creative-title">Priceline-20260915-171922.mp4</p>
           <p class="creative-sub"><span class="type-badge">Video</span></p>
@@ -461,7 +469,7 @@
 </main>
 
 <footer class="wrap">
-  Prepared by Content Mogul for Priceline · Meta delivery data, 16 to 23 Sep 2026 · Generated 30 Sep 2026
+  Prepared by Content Mogul for Opallac · Meta delivery data, 16 to 23 Sep 2026 · Generated 30 Sep 2026
 </footer>
 
 </body>
