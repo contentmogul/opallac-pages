@@ -175,6 +175,10 @@
     height: auto;
     align-self: start;
   }
+  /* Google's Drive /preview player has its own toolbar + play-button chrome that
+     breaks (missing play icon, blank panel) below roughly 240px wide - too narrow
+     to share the 160px column the plain image thumbnails use. */
+  .creative-card.video-card { grid-template-columns: 260px 1fr; }
   .creative-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .creative-media iframe { width: 100%; height: 100%; border: 0; display: block; }
   .rank-badge {
@@ -400,7 +404,7 @@
         </div>
       </div>
 
-      <div class="creative-card">
+      <div class="creative-card video-card">
         <div class="creative-media is-video" style="aspect-ratio: 720 / 1280;">
           <span class="rank-badge">3</span>
           <iframe src="https://drive.google.com/file/d/1NTwE7ADvDssAdyiGNiv08kMtWSb8XFTi/preview" allow="autoplay" loading="lazy" title="Priceline-20260915-171922.mp4"></iframe>
