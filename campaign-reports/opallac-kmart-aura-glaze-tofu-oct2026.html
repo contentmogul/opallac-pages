@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kmart: Meta TOFU Campaign Report</title>
+<meta name="description" content="Meta Traffic campaign report for OPAL-0010, prepared by Content Mogul.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --background: hsl(330 24% 98.8%);
+    --foreground: hsl(222 40% 11%);
+    --muted-foreground: hsl(222 15% 40%);
+    --primary: hsl(315 68% 49%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(320 30% 96.5%);
+    --accent: hsl(322 72% 96%);
+    --accent-foreground: hsl(315 58% 38%);
+    --border: hsl(324 22% 90%);
+    --card: hsl(0 0% 100%);
+    --chart-1: hsl(327 66% 52%);
+    --chart-2: hsl(258 60% 58%);
+    --chart-3: hsl(199 76% 46%);
+    --chart-4: hsl(160 55% 42%);
+    --chart-5: hsl(38 84% 56%);
+    --radius: 0.625rem;
+    --sidebar-gradient: linear-gradient(178deg, hsl(317 66% 50%) 0%, hsl(313 60% 43%) 100%);
+    --meta-bg: #DBEAFE;
+    --meta-fg: #1D4ED8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-foreground); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    background: var(--sidebar-gradient);
+    color: #fff;
+    padding: 48px 0 40px;
+  }
+  .brand {
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    font-size: 15px;
+    text-transform: uppercase;
+    opacity: 0.9;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0 0 14px;
+    max-width: 700px;
+    line-height: 1.25;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .chip-meta { background: var(--meta-bg); color: var(--meta-fg); }
+  .chip-objective { background: rgba(255,255,255,0.18); color: #fff; }
+  .chip-flight { background: rgba(255,255,255,0.12); color: #fff; font-weight: 500; }
+
+  main { padding: 96px 0 24px; }
+  section { margin-bottom: 44px; }
+  h2 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-foreground);
+    margin: 0 0 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+
+  /* Overview */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px 28px;
+  }
+  .overview-item .label { font-size: 12px; color: var(--muted-foreground); margin-bottom: 4px; }
+  .overview-item .value { font-size: 15px; font-weight: 600; }
+
+  /* Headline stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 16px;
+  }
+  .stat .stat-label { font-size: 12px; color: var(--muted-foreground); margin-bottom: 6px; }
+  .stat .stat-value { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; }
+  .stat.primary { background: var(--accent); border-color: var(--accent); }
+  .stat.primary .stat-value { color: var(--accent-foreground); }
+
+  /* Delivery over time */
+  .chart-card { padding: 28px 24px 20px; }
+  .chart-note { font-size: 13px; color: var(--muted-foreground); margin: 0 0 20px; }
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    height: 200px;
+    padding: 0 4px;
+  }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+  .bar-pair { display: flex; align-items: flex-end; justify-content: center; gap: 5px; height: 100%; width: 100%; }
+  .bar-single { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 100%; max-width: 24px; }
+  .bar-value { font-size: 10px; font-weight: 700; color: var(--foreground); margin-bottom: 6px; white-space: nowrap; }
+  .bar {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+  }
+  .bar.spend { background: var(--chart-1); }
+  .bar.clicks { background: var(--chart-3); }
+  .bar-date { font-size: 11px; color: var(--muted-foreground); margin-top: 8px; }
+  .chart-legend { display: flex; gap: 18px; margin-top: 18px; font-size: 12px; color: var(--muted-foreground); }
+  .legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+  .legend-dot.spend { background: var(--chart-1); }
+  .legend-dot.clicks { background: var(--chart-3); }
+
+  /* Creative breakdown */
+  .creative-list { display: flex; flex-direction: column; gap: 20px; }
+  .creative-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    align-items: stretch;
+  }
+  .creative-media {
+    position: relative;
+    background: var(--secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .creative-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .play-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    z-index: 2;
+  }
+  .rank-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 11px;
+    border-radius: 999px;
+    z-index: 2;
+  }
+  .rank-badge.top { background: var(--chart-4); }
+  .creative-body { padding: 18px 22px; }
+  .creative-title { font-size: 15px; font-weight: 700; margin: 0 0 2px; }
+  .creative-sub { font-size: 12px; color: var(--muted-foreground); margin: 0 0 18px; }
+  .creative-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .creative-metrics .m-label { font-size: 11px; color: var(--muted-foreground); margin-bottom: 3px; }
+  .creative-metrics .m-value { font-size: 16px; font-weight: 700; }
+  .type-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--secondary);
+    color: var(--foreground);
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0 48px;
+    font-size: 12px;
+    color: var(--muted-foreground);
+  }
+
+  @media (max-width: 720px) {
+    .overview-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .creative-card { grid-template-columns: 1fr; }
+    .creative-media { min-height: 180px; }
+    .creative-metrics { grid-template-columns: repeat(2, 1fr); }
+    .bars { gap: 6px; }
+    .bar-pair { gap: 3px; }
+    .bar-single { max-width: 16px; }
+    .bar-value { font-size: 8px; }
+    .bar-date { font-size: 9px; }
+    .hero h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brand">Content Mogul: Campaign Report</div>
+    <h1>OPAL-0010-Meta-TOFU-Kmart-Aura-Glaze--02-Oct-2026-Traffic-Content-Mogul</h1>
+    <div class="hero-meta">
+      <span class="chip chip-meta">META ADS</span>
+      <span class="chip chip-objective">Traffic (TOFU)</span>
+      <span class="chip chip-flight">2 to 14 Oct 2026</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="overview">
+    <h2>Campaign Overview</h2>
+    <div class="card overview-grid">
+      <div class="overview-item">
+        <div class="label">Client</div>
+        <div class="value">Kmart (Opallac)</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Objective</div>
+        <div class="value">Traffic: link clicks to website</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Platform</div>
+        <div class="value">Meta: Facebook &amp; Instagram</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Ad set</div>
+        <div class="value">Advantage+, Cold Audience, Women, Kmart Website Link Clicks</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Flight dates</div>
+        <div class="value">2 Oct to 14 Oct 2026 (13 days active delivery)</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">Currency</div>
+        <div class="value">AUD</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="headline-results">
+    <h2>Headline Results</h2>
+    <div class="stats-grid">
+      <div class="stat primary">
+        <div class="stat-label">Total spend</div>
+        <div class="stat-value">$2,999.24</div>
+      </div>
+      <div class="stat primary">
+        <div class="stat-label">Link clicks</div>
+        <div class="stat-value">15,351</div>
+      </div>
+      <div class="stat primary">
+        <div class="stat-label">CTR (link)</div>
+        <div class="stat-value">2.34%</div>
+      </div>
+      <div class="stat primary">
+        <div class="stat-label">CPC</div>
+        <div class="stat-value">$0.20</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Impressions</div>
+        <div class="stat-value">656,416</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Reach</div>
+        <div class="stat-value">316,207</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Frequency</div>
+        <div class="stat-value">2.08</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">CPM</div>
+        <div class="stat-value">$4.57</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="delivery-over-time">
+    <h2>Spend &amp; Delivery Over Time</h2>
+    <div class="card chart-card">
+      <p class="chart-note">Daily spend and link clicks, Meta-reported. Delivery ran 2 to 14 Oct, then concluded.</p>
+      <div class="bars">
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$165</div><div class="bar spend" style="height:60.2%"></div></div>
+          <div class="bar-single"><div class="bar-value">951</div><div class="bar clicks" style="height:60.3%"></div></div>
+        </div><div class="bar-date">2 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$274</div><div class="bar spend" style="height:100%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,578</div><div class="bar clicks" style="height:100%"></div></div>
+        </div><div class="bar-date">3 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$255</div><div class="bar spend" style="height:93.2%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,505</div><div class="bar clicks" style="height:95.4%"></div></div>
+        </div><div class="bar-date">4 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$252</div><div class="bar spend" style="height:92.2%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,512</div><div class="bar clicks" style="height:95.8%"></div></div>
+        </div><div class="bar-date">5 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$209</div><div class="bar spend" style="height:76.5%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,144</div><div class="bar clicks" style="height:72.5%"></div></div>
+        </div><div class="bar-date">6 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$217</div><div class="bar spend" style="height:79.4%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,141</div><div class="bar clicks" style="height:72.3%"></div></div>
+        </div><div class="bar-date">7 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$231</div><div class="bar spend" style="height:84.3%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,086</div><div class="bar clicks" style="height:68.8%"></div></div>
+        </div><div class="bar-date">8 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$227</div><div class="bar spend" style="height:83.1%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,053</div><div class="bar clicks" style="height:66.7%"></div></div>
+        </div><div class="bar-date">9 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$253</div><div class="bar spend" style="height:92.3%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,194</div><div class="bar clicks" style="height:75.7%"></div></div>
+        </div><div class="bar-date">10 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$241</div><div class="bar spend" style="height:88.1%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,146</div><div class="bar clicks" style="height:72.6%"></div></div>
+        </div><div class="bar-date">11 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$244</div><div class="bar spend" style="height:89.2%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,106</div><div class="bar clicks" style="height:70.1%"></div></div>
+        </div><div class="bar-date">12 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$224</div><div class="bar spend" style="height:81.7%"></div></div>
+          <div class="bar-single"><div class="bar-value">1,018</div><div class="bar clicks" style="height:64.5%"></div></div>
+        </div><div class="bar-date">13 Oct</div></div>
+        <div class="bar-col"><div class="bar-pair">
+          <div class="bar-single"><div class="bar-value">$208</div><div class="bar spend" style="height:76.0%"></div></div>
+          <div class="bar-single"><div class="bar-value">917</div><div class="bar clicks" style="height:58.1%"></div></div>
+        </div><div class="bar-date">14 Oct</div></div>
+      </div>
+      <div class="chart-legend">
+        <span><span class="legend-dot spend"></span>Daily spend (AUD)</span>
+        <span><span class="legend-dot clicks"></span>Daily link clicks</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="creative-breakdown">
+    <h2>Creative Breakdown: Best to Worst</h2>
+    <div class="creative-list">
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge top">Top performer</span>
+          <img src="assets/opallac-kmart-aura-glaze-tofu-oct2026/kmart-aura-kit-image.jpg" loading="lazy" alt="kmart-aura-kit_image_12axFuCK3hJX_02-oct-26_hpid-0001.jpg">
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">kmart-aura-kit_image_12axFuCK3hJX_02-oct-26_hpid-0001.jpg</p>
+          <p class="creative-sub"><span class="type-badge">Image</span> &nbsp; 46.6% of campaign spend</p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$1,397.46</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">2.30%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.19</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">7,202</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge">2</span>
+          <img src="assets/opallac-kmart-aura-glaze-tofu-oct2026/kmart-scene-dark-image.jpg" loading="lazy" alt="kmart-scene-dark_image_17o5f2OOomeu_02-oct-26_hpid-0001.png">
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">kmart-scene-dark_image_17o5f2OOomeu_02-oct-26_hpid-0001.png</p>
+          <p class="creative-sub"><span class="type-badge">Image</span></p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$591.77</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">2.27%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.20</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">2,999</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge">3</span>
+          <img src="assets/opallac-kmart-aura-glaze-tofu-oct2026/kmart-hand-model-image.jpg" loading="lazy" alt="hand-model-aura_image_1udP_wUimknI_02-oct-26_hpid-0001.png">
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">hand-model-aura_image_1udP_wUimknI_02-oct-26_hpid-0001.png</p>
+          <p class="creative-sub"><span class="type-badge">Image</span></p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$491.58</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">2.25%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.20</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">2,519</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge">4</span>
+          <img src="assets/opallac-kmart-aura-glaze-tofu-oct2026/kmart-teal-aura-glaze-video-poster.jpg" loading="lazy" alt="kmart-teal-aura-glaze-is-perfect-post-ID-18108385133604454_video_04-oct-26">
+          <span class="play-badge" aria-hidden="true">&#9658;</span>
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">kmart-teal-aura-glaze-is-perfect-post-ID-18108385133604454_video_04-oct-26</p>
+          <p class="creative-sub"><span class="type-badge">Video</span></p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$406.55</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">3.18%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.19</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">2,108</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creative-card">
+        <div class="creative-media">
+          <span class="rank-badge">5</span>
+          <img src="assets/opallac-kmart-aura-glaze-tofu-oct2026/kmart-bedazzle-video-poster.jpg" loading="lazy" alt="kmart-what-can-you-not-bedazzle-post-ID-18094901144450884_video_04-oct-26">
+          <span class="play-badge" aria-hidden="true">&#9658;</span>
+        </div>
+        <div class="creative-body">
+          <p class="creative-title">kmart-what-can-you-not-bedazzle-post-ID-18094901144450884_video_04-oct-26</p>
+          <p class="creative-sub"><span class="type-badge">Video</span></p>
+          <div class="creative-metrics">
+            <div><div class="m-label">Spend</div><div class="m-value">$111.88</div></div>
+            <div><div class="m-label">CTR</div><div class="m-value">1.55%</div></div>
+            <div><div class="m-label">CPC</div><div class="m-value">$0.21</div></div>
+            <div><div class="m-label">Clicks</div><div class="m-value">523</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  Prepared by Content Mogul for Opallac &middot; Meta delivery data, 2 to 14 Oct 2026 &middot; Generated 19 Oct 2026
+</footer>
+
+</body>
+</html>
